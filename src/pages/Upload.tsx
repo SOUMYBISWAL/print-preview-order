@@ -1,9 +1,8 @@
-
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload as UploadIcon, FileText, FileImage, FilePdf } from "lucide-react";
+import { Upload as UploadIcon, FileText, FileImage, FilePdf2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -74,7 +73,7 @@ const Upload = () => {
     if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension || '')) {
       return <FileImage className="h-8 w-8 text-blue-500" />;
     } else if (['pdf'].includes(extension || '')) {
-      return <FilePdf className="h-8 w-8 text-red-500" />;
+      return <FileText className="h-8 w-8 text-red-500" />;
     } else {
       return <FileText className="h-8 w-8 text-gray-500" />;
     }
