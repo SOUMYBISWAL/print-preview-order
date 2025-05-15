@@ -119,7 +119,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     // Calculate effective pages (for billing)
     let effectivePages = calculatedPages;
     
-    // For double-sided printing, charge ₹1 per side (₹2 total)
+    // For double-sided printing, charge ₹2.5 total per double-sided page
     if (printSide === "double") {
       // For even number of pages, all pages will be utilized for double-sided
       if (calculatedPages % 2 === 0) {
@@ -128,8 +128,8 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
         // For odd number of pages, the last page will have one blank side
         effectivePages = Math.floor(calculatedPages / 2) + 0.5;
       }
-      // Each double-sided page costs ₹2
-      basePricePerPage = 2;
+      // Each double-sided page costs ₹2.5
+      basePricePerPage = 2.5;
     }
     
     // Multiply by copies
