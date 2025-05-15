@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -34,6 +35,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
   const [customRange, setCustomRange] = useState("");
   const [price, setPrice] = useState(0);
   const [calculatedPages, setCalculatedPages] = useState(totalPages);
+  const [rangeError, setRangeError] = useState<string | null>(null);
   
   useEffect(() => {
     parseCustomRange();
@@ -47,11 +49,13 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
   const parseCustomRange = () => {
     if (pageRangeType === "all") {
       setCalculatedPages(totalPages);
+      setRangeError(null);
       return;
     }
     
     if (!customRange) {
       setCalculatedPages(0);
+      setRangeError(null);
       return;
     }
     
@@ -59,6 +63,8 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
       // Parse custom range (e.g., "1-3,5,7-9")
       const ranges = customRange.split(",");
       let pageCount = 0;
+      let invalidRange = false;
+      let outOfBoundsPage = 0;
       
       for (const range of ranges) {
         const trimmedRange = range.trim();
@@ -69,18 +75,33 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
           
           if (!isNaN(start) && !isNaN(end) && start <= end && start > 0 && end <= totalPages) {
             pageCount += (end - start + 1);
+          } else if (!isNaN(start) && !isNaN(end) && (start > totalPages || end > totalPages)) {
+            invalidRange = true;
+            outOfBoundsPage = Math.max(start, end);
+            break;
           }
         } else {
           const pageNum = parseInt(trimmedRange);
           if (!isNaN(pageNum) && pageNum > 0 && pageNum <= totalPages) {
             pageCount += 1;
+          } else if (!isNaN(pageNum) && pageNum > totalPages) {
+            invalidRange = true;
+            outOfBoundsPage = pageNum;
+            break;
           }
         }
       }
       
-      setCalculatedPages(pageCount);
+      if (invalidRange) {
+        setRangeError(`Page ${outOfBoundsPage} exceeds the total page count (${totalPages})`);
+        setCalculatedPages(0);
+      } else {
+        setRangeError(null);
+        setCalculatedPages(pageCount);
+      }
     } catch (error) {
       console.error("Error parsing custom range", error);
+      setRangeError("Invalid range format");
       setCalculatedPages(0);
     }
   };
@@ -96,10 +117,12 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
       basePricePerPage += 1.0;
     }
     
-    // Calculate pages based on single or double-sided
+    // Calculate effective pages (for billing)
     let effectivePages = calculatedPages;
+    
+    // Fixed price for double-sided printing (Rs. 2)
     if (printSide === "double") {
-      effectivePages = Math.ceil(calculatedPages / 2);
+      basePricePerPage = 2;
     }
     
     // Multiply by copies
@@ -125,7 +148,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
       toast({
         variant: "destructive",
         title: "Invalid page range",
-        description: "The page range you entered is invalid or out of bounds"
+        description: rangeError || "The page range you entered is invalid or out of bounds"
       });
       return;
     }
@@ -220,7 +243,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                         </div>
                         <div className="flex items-center">
                           <RadioGroupItem value="double" id="double" />
-                          <Label htmlFor="double" className="ml-2">Double Sided</Label>
+                          <Label htmlFor="double" className="ml-2">Double Sided (₹2/page)</Label>
                         </div>
                       </RadioGroup>
                     </div>
@@ -257,12 +280,17 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                             placeholder="E.g. 1-5,8,11-13"
                             value={customRange}
                             onChange={(e) => setCustomRange(e.target.value)}
-                            className="mt-1"
+                            className={`mt-1 ${rangeError ? 'border-red-500' : ''}`}
                           />
                           <div className="flex justify-between items-center mt-1">
-                            <p className="text-sm text-gray-500">
-                              Enter page numbers and/or range with hyphens
-                            </p>
+                            <div>
+                              <p className="text-sm text-gray-500">
+                                Enter page numbers and/or range with hyphens
+                              </p>
+                              {rangeError && (
+                                <p className="text-sm text-red-500">{rangeError}</p>
+                              )}
+                            </div>
                             <p className="text-sm font-medium">
                               {calculatedPages} pages selected
                             </p>
@@ -349,7 +377,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
             <Button variant="outline" onClick={() => navigate("/upload")}>
               Back
             </Button>
-            <Button onClick={handleContinue}>
+            <Button onClick={handleContinue} disabled={pageRangeType === "custom" && !!rangeError}>
               Continue to Checkout
             </Button>
           </div>
