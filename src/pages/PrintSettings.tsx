@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -107,7 +106,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
   };
 
   const calculatePrice = () => {
-    // Basic price per page
+    // Basic price per page for single-sided printing
     let basePricePerPage = printType === "bw" ? 1.5 : 4;
     
     // Paper type adjustments
@@ -120,8 +119,16 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     // Calculate effective pages (for billing)
     let effectivePages = calculatedPages;
     
-    // Fixed price for double-sided printing (Rs. 2)
+    // For double-sided printing, charge ₹1 per side (₹2 total)
     if (printSide === "double") {
+      // For even number of pages, all pages will be utilized for double-sided
+      if (calculatedPages % 2 === 0) {
+        effectivePages = calculatedPages / 2;
+      } else {
+        // For odd number of pages, the last page will have one blank side
+        effectivePages = Math.floor(calculatedPages / 2) + 0.5;
+      }
+      // Each double-sided page costs ₹2
       basePricePerPage = 2;
     }
     
