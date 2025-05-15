@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, FileText, FileImage, FilePdf } from "lucide-react";
+import { Upload as UploadIcon, FileText, FileImage, FilePdf } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -107,7 +107,7 @@ const Upload = () => {
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp"
                 />
                 
-                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <UploadIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Drag and drop your files here</h3>
                 <p className="text-gray-500 mb-4">
                   Support for PDF, Word, JPG, PNG and other image formats
