@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -16,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -34,66 +33,108 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
   const [pageRangeType, setPageRangeType] = useState("all");
   const [customRange, setCustomRange] = useState("");
   const [price, setPrice] = useState(0);
+  const [calculatedPages, setCalculatedPages] = useState(totalPages);
+  
+  useEffect(() => {
+    parseCustomRange();
+  }, [pageRangeType, customRange, totalPages]);
 
   // Calculate price whenever settings change
   useEffect(() => {
     calculatePrice();
-  }, [paperType, printType, printSide, copies, pageRangeType, customRange, totalPages]);
+  }, [calculatedPages, printType, printSide, copies, paperType]);
+
+  const parseCustomRange = () => {
+    if (pageRangeType === "all") {
+      setCalculatedPages(totalPages);
+      return;
+    }
+    
+    if (!customRange) {
+      setCalculatedPages(0);
+      return;
+    }
+    
+    try {
+      // Parse custom range (e.g., "1-3,5,7-9")
+      const ranges = customRange.split(",");
+      let pageCount = 0;
+      
+      for (const range of ranges) {
+        const trimmedRange = range.trim();
+        if (trimmedRange.includes("-")) {
+          const [startStr, endStr] = trimmedRange.split("-").map(num => num.trim());
+          const start = parseInt(startStr);
+          const end = parseInt(endStr);
+          
+          if (!isNaN(start) && !isNaN(end) && start <= end && start > 0 && end <= totalPages) {
+            pageCount += (end - start + 1);
+          }
+        } else {
+          const pageNum = parseInt(trimmedRange);
+          if (!isNaN(pageNum) && pageNum > 0 && pageNum <= totalPages) {
+            pageCount += 1;
+          }
+        }
+      }
+      
+      setCalculatedPages(pageCount);
+    } catch (error) {
+      console.error("Error parsing custom range", error);
+      setCalculatedPages(0);
+    }
+  };
 
   const calculatePrice = () => {
     // Basic price per page
-    const basePricePerPage = printType === "bw" ? 1.5 : 4;
+    let basePricePerPage = printType === "bw" ? 1.5 : 4;
     
-    // Calculate number of pages to print
-    let pagesToPrint = totalPages;
-    
-    if (pageRangeType === "custom" && customRange) {
-      try {
-        // Parse custom range (e.g., "1-3,5,7-9")
-        const ranges = customRange.split(",");
-        pagesToPrint = 0;
-        
-        for (const range of ranges) {
-          if (range.includes("-")) {
-            const [start, end] = range.split("-").map(num => parseInt(num.trim()));
-            if (!isNaN(start) && !isNaN(end) && start <= end) {
-              pagesToPrint += (end - start + 1);
-            }
-          } else {
-            const pageNum = parseInt(range.trim());
-            if (!isNaN(pageNum)) {
-              pagesToPrint += 1;
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing custom range", error);
-      }
+    // Paper type adjustments
+    if (paperType === "premium") {
+      basePricePerPage += 0.5;
+    } else if (paperType === "glossy") {
+      basePricePerPage += 1.0;
     }
     
-    // Double the pages if double-sided (as we count per printed side)
+    // Calculate pages based on single or double-sided
+    let effectivePages = calculatedPages;
     if (printSide === "double") {
-      pagesToPrint = Math.ceil(pagesToPrint / 2);
+      effectivePages = Math.ceil(calculatedPages / 2);
     }
     
     // Multiply by copies
-    pagesToPrint *= copies;
+    effectivePages *= copies;
     
     // Calculate subtotal
-    let subtotal = pagesToPrint * basePricePerPage;
-    
-    // Apply paper type markup if needed (currently no markup in the requirements)
+    const subtotal = effectivePages * basePricePerPage;
     
     setPrice(subtotal);
   };
 
   const handleContinue = () => {
     if (pageRangeType === "custom" && !customRange) {
-      toast.error("Please enter a custom page range");
+      toast({
+        variant: "destructive",
+        title: "Invalid page range",
+        description: "Please enter a valid page range"
+      });
       return;
     }
     
-    toast.success("Print settings saved");
+    if (pageRangeType === "custom" && calculatedPages === 0) {
+      toast({
+        variant: "destructive",
+        title: "Invalid page range",
+        description: "The page range you entered is invalid or out of bounds"
+      });
+      return;
+    }
+    
+    toast({
+      title: "Print settings saved",
+      description: "Your print settings have been saved successfully"
+    });
+    
     navigate("/checkout", {
       state: {
         paperType,
@@ -103,7 +144,8 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
         pageRange: pageRangeType === "all" ? "All Pages" : customRange,
         price,
         fileCount,
-        totalPages
+        totalPages: pageRangeType === "all" ? totalPages : calculatedPages,
+        actualPages: calculatedPages
       }
     });
   };
@@ -201,7 +243,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                       >
                         <div className="flex items-center">
                           <RadioGroupItem value="all" id="all-pages" />
-                          <Label htmlFor="all-pages" className="ml-2">All Pages</Label>
+                          <Label htmlFor="all-pages" className="ml-2">All Pages ({totalPages} pages)</Label>
                         </div>
                         <div className="flex items-center">
                           <RadioGroupItem value="custom" id="custom-range" />
@@ -217,9 +259,14 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                             onChange={(e) => setCustomRange(e.target.value)}
                             className="mt-1"
                           />
-                          <p className="text-sm text-gray-500 mt-1">
-                            Enter page numbers and/or range with hyphens (e.g. 1-3,5,7-9)
-                          </p>
+                          <div className="flex justify-between items-center mt-1">
+                            <p className="text-sm text-gray-500">
+                              Enter page numbers and/or range with hyphens
+                            </p>
+                            <p className="text-sm font-medium">
+                              {calculatedPages} pages selected
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -268,7 +315,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                     <div>
                       <p className="text-lg font-semibold">Estimated Price:</p>
                       <p className="text-sm text-gray-500">
-                        Final price may vary based on actual page count
+                        Final price based on {calculatedPages} page{calculatedPages !== 1 ? 's' : ''}
                       </p>
                     </div>
                     <p className="text-2xl font-bold">₹{price.toFixed(2)}</p>

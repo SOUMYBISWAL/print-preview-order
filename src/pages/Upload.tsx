@@ -2,22 +2,94 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload as UploadIcon, FileText, FileImage, FilePdf2 } from "lucide-react";
+import { Upload as UploadIcon, FileText, FileImage } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+interface FileWithPages extends File {
+  pageCount?: number;
+}
+
 const Upload = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileWithPages[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isCountingPages, setIsCountingPages] = useState(false);
+  const [totalPageCount, setTotalPageCount] = useState(0);
+
+  const countPagesInFile = async (file: FileWithPages): Promise<number> => {
+    return new Promise((resolve) => {
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      
+      // For PDF files, we try to count pages
+      if (extension === 'pdf') {
+        const fileReader = new FileReader();
+        fileReader.onload = function() {
+          const typedArray = new Uint8Array(this.result as ArrayBuffer);
+          
+          // Simple page counting heuristic for PDF
+          // This is a basic estimation - looking for "obj" patterns in the PDF
+          // A real implementation would use a PDF library like PDF.js
+          let text = '';
+          for (let i = 0; i < typedArray.length; i++) {
+            text += String.fromCharCode(typedArray[i]);
+          }
+          
+          // Count pattern /Page objects in PDF
+          const pagePattern = /\/Type[\s]*\/Page[^s]/g;
+          const matches = text.match(pagePattern);
+          const pageCount = matches ? matches.length : 1;
+          
+          resolve(pageCount);
+        };
+        fileReader.onerror = () => resolve(5); // Default if error
+        fileReader.readAsArrayBuffer(file);
+      } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension || '')) {
+        // For images, count as 1 page
+        resolve(1);
+      } else {
+        // For other documents like Word, etc., estimate based on size
+        // This is a rough estimate - 3KB per page
+        const sizeInKB = file.size / 1024;
+        const estimatedPages = Math.max(1, Math.ceil(sizeInKB / 3));
+        resolve(Math.min(estimatedPages, 20)); // Cap at 20 pages for estimation
+      }
+    });
+  };
+
+  const processFiles = async (newFiles: FileWithPages[]) => {
+    setIsCountingPages(true);
+    
+    let pageCount = totalPageCount;
+    const processedFiles = [...files];
+    
+    for (const file of newFiles) {
+      try {
+        const pages = await countPagesInFile(file);
+        file.pageCount = pages;
+        pageCount += pages;
+        processedFiles.push(file);
+      } catch (error) {
+        console.error("Error counting pages:", error);
+        file.pageCount = 5; // Default if error
+        pageCount += 5;
+        processedFiles.push(file);
+      }
+    }
+    
+    setFiles(processedFiles);
+    setTotalPageCount(pageCount);
+    setIsCountingPages(false);
+    
+    toast.success(`${newFiles.length} file${newFiles.length > 1 ? 's' : ''} uploaded successfully`);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files);
-      setFiles([...files, ...newFiles]);
-      toast.success(`${newFiles.length} file${newFiles.length > 1 ? 's' : ''} uploaded successfully`);
+      const newFiles = Array.from(e.target.files) as FileWithPages[];
+      processFiles(newFiles);
     }
   };
 
@@ -36,9 +108,8 @@ const Upload = () => {
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newFiles = Array.from(e.dataTransfer.files);
-      setFiles([...files, ...newFiles]);
-      toast.success(`${newFiles.length} file${newFiles.length > 1 ? 's' : ''} uploaded successfully`);
+      const newFiles = Array.from(e.dataTransfer.files) as FileWithPages[];
+      processFiles(newFiles);
     }
   };
 
@@ -50,8 +121,13 @@ const Upload = () => {
 
   const handleRemoveFile = (index: number) => {
     const updatedFiles = [...files];
+    const removedFile = updatedFiles[index];
+    const pageCount = removedFile.pageCount || 0;
+    
     updatedFiles.splice(index, 1);
     setFiles(updatedFiles);
+    setTotalPageCount(totalPageCount - pageCount);
+    
     toast.info("File removed");
   };
 
@@ -61,10 +137,14 @@ const Upload = () => {
       return;
     }
 
-    // In a real application, we would upload files to a server here
-    // For now, we'll simulate success and navigate to print settings
+    // Navigate to print settings with actual page count
     toast.success("Files ready for printing");
-    navigate("/print-settings", { state: { fileCount: files.length, totalPages: files.length * 5 } }); // Mocking page count
+    navigate("/print-settings", { 
+      state: { 
+        fileCount: files.length, 
+        totalPages: totalPageCount 
+      }
+    });
   };
 
   const getFileIcon = (file: File) => {
@@ -118,10 +198,21 @@ const Upload = () => {
             </CardContent>
           </Card>
           
+          {isCountingPages && (
+            <div className="text-center py-4">
+              <p className="text-blue-600">Analyzing files and counting pages...</p>
+            </div>
+          )}
+          
           {files.length > 0 && (
             <Card className="mb-6">
               <CardContent className="p-4">
-                <h3 className="font-medium mb-4">Uploaded Files ({files.length})</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-medium">Uploaded Files ({files.length})</h3>
+                  <div className="text-sm font-medium">
+                    Total Pages: {totalPageCount}
+                  </div>
+                </div>
                 <div className="space-y-3">
                   {files.map((file, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -129,9 +220,14 @@ const Upload = () => {
                         {getFileIcon(file)}
                         <div className="ml-3">
                           <p className="font-medium">{file.name}</p>
-                          <p className="text-sm text-gray-500">
-                            {(file.size / 1024).toFixed(2)} KB
-                          </p>
+                          <div className="flex items-center space-x-4">
+                            <p className="text-sm text-gray-500">
+                              {(file.size / 1024).toFixed(2)} KB
+                            </p>
+                            <p className="text-sm text-blue-600">
+                              {file.pageCount || "-"} pages
+                            </p>
+                          </div>
                         </div>
                       </div>
                       <Button
@@ -152,7 +248,7 @@ const Upload = () => {
             <Button variant="outline" onClick={() => navigate("/")}>
               Cancel
             </Button>
-            <Button onClick={handleContinue} disabled={files.length === 0}>
+            <Button onClick={handleContinue} disabled={files.length === 0 || isCountingPages}>
               Continue to Print Settings
             </Button>
           </div>
