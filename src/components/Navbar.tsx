@@ -1,11 +1,36 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShoppingCart, User, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const Navbar = () => {
+  const [cartCount, setCartCount] = useState(0);
+  
+  useEffect(() => {
+    // Load cart items from localStorage
+    const updateCartCount = () => {
+      const cartItems = JSON.parse(localStorage.getItem('printCart') || '[]');
+      setCartCount(cartItems.length);
+    };
+    
+    // Update cart count on mount
+    updateCartCount();
+    
+    // Listen for storage changes to update cart count
+    window.addEventListener('storage', updateCartCount);
+    
+    // Custom event for cart updates without page reload
+    window.addEventListener('cartUpdated', updateCartCount);
+    
+    return () => {
+      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('cartUpdated', updateCartCount);
+    };
+  }, []);
+  
   return (
     <header className="border-b border-gray-200">
       <div className="container mx-auto px-4 py-4">
@@ -48,6 +73,11 @@ const Navbar = () => {
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-green-600">
+                    {cartCount}
+                  </Badge>
+                )}
               </Button>
             </Link>
             <Link to="/account">

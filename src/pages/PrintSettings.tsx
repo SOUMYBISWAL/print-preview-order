@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { ShoppingCart, ArrowRight } from "lucide-react";
 
 interface PrintSettingsProps {}
 
@@ -139,6 +140,51 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     const subtotal = effectivePages * basePricePerPage;
     
     setPrice(subtotal);
+  };
+
+  const handleAddToCart = () => {
+    if (pageRangeType === "custom" && !customRange) {
+      toast({
+        variant: "destructive",
+        title: "Invalid page range",
+        description: "Please enter a valid page range"
+      });
+      return;
+    }
+    
+    if (pageRangeType === "custom" && calculatedPages === 0) {
+      toast({
+        variant: "destructive",
+        title: "Invalid page range",
+        description: rangeError || "The page range you entered is invalid or out of bounds"
+      });
+      return;
+    }
+    
+    // Add to cart
+    // In a real app, you would store this in localStorage or a state management system
+    const cartItem = {
+      paperType,
+      printType,
+      printSide,
+      copies,
+      pageRange: pageRangeType === "all" ? "All Pages" : customRange,
+      price,
+      fileCount,
+      totalPages: pageRangeType === "all" ? totalPages : calculatedPages,
+      actualPages: calculatedPages,
+      id: Math.random().toString(36).substr(2, 9)
+    };
+    
+    // For simplicity, we'll just store the latest cart item in localStorage
+    const cartItems = JSON.parse(localStorage.getItem('printCart') || '[]');
+    cartItems.push(cartItem);
+    localStorage.setItem('printCart', JSON.stringify(cartItems));
+    
+    toast({
+      title: "Added to cart",
+      description: `Your print job has been added to the cart (${cartItems.length} items)`
+    });
   };
 
   const handleContinue = () => {
@@ -375,6 +421,25 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                       You qualify for FREE delivery!
                     </div>
                   )}
+                  
+                  <div className="mt-6 grid grid-cols-2 gap-4">
+                    <Button 
+                      onClick={handleAddToCart}
+                      variant="outline"
+                      className="flex items-center justify-center"
+                      disabled={pageRangeType === "custom" && !!rangeError}
+                    >
+                      <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                    </Button>
+                    
+                    <Button 
+                      onClick={handleContinue}
+                      className="flex items-center justify-center"
+                      disabled={pageRangeType === "custom" && !!rangeError}
+                    >
+                      Checkout <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -383,9 +448,6 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
           <div className="flex justify-between mt-6">
             <Button variant="outline" onClick={() => navigate("/upload")}>
               Back
-            </Button>
-            <Button onClick={handleContinue} disabled={pageRangeType === "custom" && !!rangeError}>
-              Continue to Checkout
             </Button>
           </div>
         </div>
