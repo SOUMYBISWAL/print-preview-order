@@ -250,7 +250,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                         </div>
                         <div className="flex items-center">
                           <RadioGroupItem value="double" id="double" />
-                          <Label htmlFor="double" className="ml-2">Double Sided (₹2/page)</Label>
+                          <Label htmlFor="double" className="ml-2">Double Sided (₹2.5/page)</Label>
                         </div>
                       </RadioGroup>
                     </div>
