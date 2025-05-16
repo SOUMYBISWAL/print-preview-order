@@ -11,7 +11,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -40,8 +39,6 @@ const Checkout = () => {
     fileCount: 0,
     totalPages: 0
   };
-
-  const [paymentMethod, setPaymentMethod] = useState("online");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -71,7 +68,7 @@ const Checkout = () => {
       return;
     }
     
-    // Process payment (in a real app, this would integrate with a payment gateway)
+    // Process order
     toast.success("Order placed successfully!");
     navigate("/order-confirmation", { 
       state: { 
@@ -193,50 +190,15 @@ const Checkout = () => {
                         />
                       </div>
                     </div>
+
+                    <Button
+                      className="w-full mt-4"
+                      size="lg"
+                      onClick={handleSubmit}
+                    >
+                      Place Order
+                    </Button>
                   </form>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Payment Method</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <TabsList className="grid grid-cols-2 w-full mb-4">
-                      <TabsTrigger value="online">Online Payment</TabsTrigger>
-                      <TabsTrigger value="cod">Cash on Delivery</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="online" className="space-y-4">
-                      <div>
-                        <Label htmlFor="card-number">Card Number</Label>
-                        <Input
-                          id="card-number"
-                          placeholder="1234 5678 9012 3456"
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="expiry">Expiry Date</Label>
-                          <Input id="expiry" placeholder="MM/YY" />
-                        </div>
-                        <div>
-                          <Label htmlFor="cvv">CVV</Label>
-                          <Input id="cvv" placeholder="123" />
-                        </div>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="cod">
-                      <div className="p-4 bg-yellow-50 rounded-md">
-                        <p className="text-sm text-yellow-800">
-                          Pay with cash upon delivery. A small convenience fee may apply.
-                        </p>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
                 </CardContent>
               </Card>
             </div>
@@ -286,14 +248,6 @@ const Checkout = () => {
                       <p>Total</p>
                       <p>₹{(printSummary.price + (printSummary.price >= 99 ? 0 : 20)).toFixed(2)}</p>
                     </div>
-                    
-                    <Button
-                      className="w-full"
-                      size="lg"
-                      onClick={handleSubmit}
-                    >
-                      Place Order
-                    </Button>
                     
                     {printSummary.price >= 99 && (
                       <div className="mt-2 p-2 bg-green-50 text-green-700 rounded-md text-sm flex items-center">
