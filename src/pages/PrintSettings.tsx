@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -37,6 +36,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
   const [price, setPrice] = useState(0);
   const [calculatedPages, setCalculatedPages] = useState(totalPages);
   const [rangeError, setRangeError] = useState<string | null>(null);
+  const [uniquePages, setUniquePages] = useState<number[]>([]);
   
   useEffect(() => {
     parseCustomRange();
@@ -45,17 +45,19 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
   // Calculate price whenever settings change
   useEffect(() => {
     calculatePrice();
-  }, [calculatedPages, printType, printSide, copies, paperType]);
+  }, [calculatedPages, printType, printSide, copies, paperType, uniquePages]);
 
   const parseCustomRange = () => {
     if (pageRangeType === "all") {
       setCalculatedPages(totalPages);
+      setUniquePages(Array.from({ length: totalPages }, (_, i) => i + 1));
       setRangeError(null);
       return;
     }
     
     if (!customRange) {
       setCalculatedPages(0);
+      setUniquePages([]);
       setRangeError(null);
       return;
     }
@@ -63,7 +65,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     try {
       // Parse custom range (e.g., "1-3,5,7-9")
       const ranges = customRange.split(",");
-      let pageCount = 0;
+      const selectedPages: number[] = [];
       let invalidRange = false;
       let outOfBoundsPage = 0;
       
@@ -75,7 +77,9 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
           const end = parseInt(endStr);
           
           if (!isNaN(start) && !isNaN(end) && start <= end && start > 0 && end <= totalPages) {
-            pageCount += (end - start + 1);
+            for (let i = start; i <= end; i++) {
+              selectedPages.push(i);
+            }
           } else if (!isNaN(start) && !isNaN(end) && (start > totalPages || end > totalPages)) {
             invalidRange = true;
             outOfBoundsPage = Math.max(start, end);
@@ -84,7 +88,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
         } else {
           const pageNum = parseInt(trimmedRange);
           if (!isNaN(pageNum) && pageNum > 0 && pageNum <= totalPages) {
-            pageCount += 1;
+            selectedPages.push(pageNum);
           } else if (!isNaN(pageNum) && pageNum > totalPages) {
             invalidRange = true;
             outOfBoundsPage = pageNum;
@@ -96,49 +100,86 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
       if (invalidRange) {
         setRangeError(`Page ${outOfBoundsPage} exceeds the total page count (${totalPages})`);
         setCalculatedPages(0);
+        setUniquePages([]);
       } else {
+        // Remove duplicates by converting to Set and back to array
+        const uniqueSelectedPages = [...new Set(selectedPages)].sort((a, b) => a - b);
         setRangeError(null);
-        setCalculatedPages(pageCount);
+        setCalculatedPages(uniqueSelectedPages.length);
+        setUniquePages(uniqueSelectedPages);
       }
     } catch (error) {
       console.error("Error parsing custom range", error);
       setRangeError("Invalid range format");
       setCalculatedPages(0);
+      setUniquePages([]);
     }
   };
 
   const calculatePrice = () => {
-    // Basic price per page for standard printing
-    let basePricePerPage = printType === "bw" ? 1.5 : 4;
-    
-    // Paper type adjustments
-    if (paperType === "premium") {
-      basePricePerPage += 0.5;
-    } else if (paperType === "glossy") {
-      basePricePerPage += 1.0;
+    // If no pages selected, price is 0
+    if (calculatedPages === 0) {
+      setPrice(0);
+      return;
     }
     
-    // Calculate effective pages (for billing)
-    let effectivePages = calculatedPages;
+    let totalPrice = 0;
     
-    // For double-sided printing, charge based on print type
-    if (printSide === "double") {
+    if (printSide === "single") {
+      // Simple calculation for single-sided
+      const basePricePerPage = printType === "bw" ? 1.5 : 4;
+      const priceWithPaperType = paperType === "standard" ? basePricePerPage : 
+                               paperType === "premium" ? basePricePerPage + 0.5 : 
+                               basePricePerPage + 1.0; // glossy
+      
+      totalPrice = calculatedPages * priceWithPaperType;
+    } else {
+      // Double-sided printing calculation
       if (printType === "bw") {
-        // Black & white double-sided price: ₹2.5 per page
-        basePricePerPage = 2.5;
+        // For black and white double-sided
+        const fullSheets = Math.floor(calculatedPages / 2);
+        const hasExtraPage = calculatedPages % 2 !== 0;
+        
+        // Full double-sided sheets at ₹2.5 each
+        totalPrice = fullSheets * 2.5;
+        
+        // Add cost for extra single-sided page if needed
+        if (hasExtraPage) {
+          totalPrice += 1.5;
+        }
+        
+        // Apply paper type adjustments
+        if (paperType === "premium") {
+          totalPrice += calculatedPages * 0.25; // Half the premium cost per side
+        } else if (paperType === "glossy") {
+          totalPrice += calculatedPages * 0.5; // Half the glossy cost per side
+        }
       } else {
-        // Color double-sided price: ₹4 per page
-        basePricePerPage = 4;
+        // For color double-sided
+        const fullSheets = Math.floor(calculatedPages / 2);
+        const hasExtraPage = calculatedPages % 2 !== 0;
+        
+        // Full double-sided sheets at ₹4 each
+        totalPrice = fullSheets * 4;
+        
+        // Add cost for extra single-sided page if needed
+        if (hasExtraPage) {
+          totalPrice += 4;
+        }
+        
+        // Apply paper type adjustments
+        if (paperType === "premium") {
+          totalPrice += calculatedPages * 0.25; // Half the premium cost per side
+        } else if (paperType === "glossy") {
+          totalPrice += calculatedPages * 0.5; // Half the glossy cost per side
+        }
       }
     }
     
     // Multiply by copies
-    effectivePages *= copies;
+    totalPrice *= copies;
     
-    // Calculate subtotal
-    const subtotal = effectivePages * basePricePerPage;
-    
-    setPrice(subtotal);
+    setPrice(totalPrice);
   };
 
   const handleAddToCart = () => {
@@ -295,7 +336,9 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                         </div>
                         <div className="flex items-center">
                           <RadioGroupItem value="double" id="double" />
-                          <Label htmlFor="double" className="ml-2">Double Sided (₹2.5/page)</Label>
+                          <Label htmlFor="double" className="ml-2">
+                            Double Sided ({printType === "bw" ? "₹2.5" : "₹4"}/sheet)
+                          </Label>
                         </div>
                       </RadioGroup>
                     </div>
@@ -347,6 +390,14 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                               {calculatedPages} pages selected
                             </p>
                           </div>
+                          {printSide === "double" && calculatedPages > 0 && (
+                            <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                              <p className="text-sm text-blue-700">
+                                {Math.ceil(calculatedPages / 2)} physical {Math.ceil(calculatedPages / 2) === 1 ? 'sheet' : 'sheets'} needed 
+                                {calculatedPages % 2 !== 0 && " (1 page single-sided)"}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
