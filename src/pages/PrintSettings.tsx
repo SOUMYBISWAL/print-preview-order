@@ -159,8 +159,8 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
         const fullSheets = Math.floor(calculatedPages / 2);
         const hasExtraPage = calculatedPages % 2 !== 0;
         
-        // Full double-sided sheets at ₹4 each
-        totalPrice = fullSheets * 4;
+        // Full double-sided sheets at ₹8 each (updated from ₹4)
+        totalPrice = fullSheets * 8;
         
         // Add cost for extra single-sided page if needed
         if (hasExtraPage) {
@@ -337,7 +337,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                         <div className="flex items-center">
                           <RadioGroupItem value="double" id="double" />
                           <Label htmlFor="double" className="ml-2">
-                            Double Sided ({printType === "bw" ? "₹2.5" : "₹4"}/sheet)
+                            Double Sided ({printType === "bw" ? "₹2.5" : "₹8"}/sheet)
                           </Label>
                         </div>
                       </RadioGroup>
