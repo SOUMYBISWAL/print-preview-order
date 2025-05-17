@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -126,8 +127,8 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
         // Black & white double-sided price: ₹2.5 per page
         basePricePerPage = 2.5;
       } else {
-        // Color double-sided price: ₹8 per page
-        basePricePerPage = 8;
+        // Color double-sided price: ₹4 per page
+        basePricePerPage = 4;
       }
     }
     
