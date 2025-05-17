@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -314,11 +315,11 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                       >
                         <div className="flex items-center">
                           <RadioGroupItem value="bw" id="bw" />
-                          <Label htmlFor="bw" className="ml-2">Black & White</Label>
+                          <Label htmlFor="bw" className="ml-2">Black & White (₹1.5 Rs/page)</Label>
                         </div>
                         <div className="flex items-center">
                           <RadioGroupItem value="color" id="color" />
-                          <Label htmlFor="color" className="ml-2">Color</Label>
+                          <Label htmlFor="color" className="ml-2">Color (₹4 Rs/page)</Label>
                         </div>
                       </RadioGroup>
                     </div>
@@ -337,7 +338,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                         <div className="flex items-center">
                           <RadioGroupItem value="double" id="double" />
                           <Label htmlFor="double" className="ml-2">
-                            Double Sided ({printType === "bw" ? "₹2.5" : "₹8"}/sheet)
+                            Double Sided ({printType === "bw" ? "₹2.5 Rs/page" : "₹8 Rs/page"})
                           </Label>
                         </div>
                       </RadioGroup>
@@ -449,7 +450,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                         Final price based on {calculatedPages} page{calculatedPages !== 1 ? 's' : ''}
                       </p>
                     </div>
-                    <p className="text-2xl font-bold">₹{price.toFixed(2)}</p>
+                    <p className="text-2xl font-bold">₹{price.toFixed(2)} Rs</p>
                   </div>
                   
                   {price >= 99 && (
