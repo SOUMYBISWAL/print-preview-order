@@ -3,11 +3,20 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, User, Search } from "lucide-react";
+import { ShoppingCart, User, Search, LogIn, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [cartCount, setCartCount] = useState(0);
+  const [user, setUser] = useState<{ name: string; email: string; } | null>(null);
   
   useEffect(() => {
     // Load cart items from localStorage
@@ -25,11 +34,42 @@ const Navbar = () => {
     // Custom event for cart updates without page reload
     window.addEventListener('cartUpdated', updateCartCount);
     
+    // Check if user is logged in
+    const checkUserLogin = () => {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          setUser(userData);
+        } catch (error) {
+          console.error('Error parsing user data', error);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    };
+    
+    // Check user login on mount
+    checkUserLogin();
+    
+    // Listen for user state changes
+    window.addEventListener('userStateChanged', checkUserLogin);
+    
     return () => {
       window.removeEventListener('storage', updateCartCount);
       window.removeEventListener('cartUpdated', updateCartCount);
+      window.removeEventListener('userStateChanged', checkUserLogin);
     };
   }, []);
+  
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem('user');
+    
+    // Trigger custom event to update UI
+    window.dispatchEvent(new Event('userStateChanged'));
+  };
   
   return (
     <header className="border-b border-gray-200">
@@ -80,11 +120,41 @@ const Navbar = () => {
                 )}
               </Button>
             </Link>
-            <Link to="/account">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
+            
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span>{user.name}</span>
+                      <span className="text-xs text-gray-500">{user.email}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/account" className="w-full cursor-pointer">My Account</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/track-order" className="w-full cursor-pointer">My Orders</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/login">
+                <Button variant="ghost" size="icon">
+                  <LogIn className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
