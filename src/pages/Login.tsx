@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus, Phone } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -16,13 +16,13 @@ const Login = () => {
   const [activeTab, setActiveTab] = useState("login");
   
   // Login form state
-  const [loginEmail, setLoginEmail] = useState("");
+  const [loginMobile, setLoginMobile] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
   
   // Register form state
   const [registerName, setRegisterName] = useState("");
-  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerMobile, setRegisterMobile] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [registering, setRegistering] = useState(false);
@@ -34,11 +34,11 @@ const Login = () => {
     // Simulating authentication process
     setTimeout(() => {
       // In a real application, you would verify credentials against a backend
-      if (loginEmail && loginPassword) {
+      if (loginMobile && loginPassword) {
         // Store user info in localStorage (in a real app, use tokens)
         const user = {
-          email: loginEmail,
-          name: loginEmail.split('@')[0], // Simple name extraction for demo
+          mobile: loginMobile,
+          name: `User-${loginMobile.substring(6)}`, // Simple name extraction for demo
           isLoggedIn: true
         };
         localStorage.setItem('user', JSON.stringify(user));
@@ -68,7 +68,7 @@ const Login = () => {
     setRegistering(true);
     
     // Validate form
-    if (!registerName || !registerEmail || !registerPassword) {
+    if (!registerName || !registerMobile || !registerPassword) {
       toast({
         title: "Registration failed",
         description: "Please fill in all required fields.",
@@ -93,7 +93,7 @@ const Login = () => {
       // In a real application, you would send this data to a backend API
       const user = {
         name: registerName,
-        email: registerEmail,
+        mobile: registerMobile,
         isLoggedIn: true
       };
       
@@ -129,21 +129,28 @@ const Login = () => {
                 <CardHeader>
                   <CardTitle>Login</CardTitle>
                   <CardDescription>
-                    Enter your email and password to access your account
+                    Enter your mobile number and password to access your account
                   </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleLogin}>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        placeholder="name@example.com" 
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        required
-                      />
+                      <Label htmlFor="mobile">Mobile Number</Label>
+                      <div className="flex">
+                        <div className="flex items-center px-3 border border-r-0 border-input rounded-l-md bg-muted">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <Input 
+                          id="mobile" 
+                          type="tel"
+                          pattern="[0-9]{10}" 
+                          placeholder="10-digit mobile number" 
+                          value={loginMobile}
+                          onChange={(e) => setLoginMobile(e.target.value)}
+                          className="rounded-l-none"
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between">
@@ -197,15 +204,22 @@ const Login = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="register-email">Email</Label>
-                      <Input 
-                        id="register-email" 
-                        type="email" 
-                        placeholder="name@example.com" 
-                        value={registerEmail}
-                        onChange={(e) => setRegisterEmail(e.target.value)}
-                        required
-                      />
+                      <Label htmlFor="register-mobile">Mobile Number</Label>
+                      <div className="flex">
+                        <div className="flex items-center px-3 border border-r-0 border-input rounded-l-md bg-muted">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <Input 
+                          id="register-mobile" 
+                          type="tel"
+                          pattern="[0-9]{10}" 
+                          placeholder="10-digit mobile number" 
+                          value={registerMobile}
+                          onChange={(e) => setRegisterMobile(e.target.value)}
+                          className="rounded-l-none"
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="register-password">Password</Label>

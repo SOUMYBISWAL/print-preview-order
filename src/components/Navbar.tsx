@@ -16,7 +16,7 @@ import {
 
 const Navbar = () => {
   const [cartCount, setCartCount] = useState(0);
-  const [user, setUser] = useState<{ name: string; email: string; } | null>(null);
+  const [user, setUser] = useState<{ name: string; mobile?: string; } | null>(null);
   
   useEffect(() => {
     // Load cart items from localStorage
@@ -132,7 +132,7 @@ const Navbar = () => {
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
                       <span>{user.name}</span>
-                      <span className="text-xs text-gray-500">{user.email}</span>
+                      <span className="text-xs text-gray-500">{user.mobile}</span>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
