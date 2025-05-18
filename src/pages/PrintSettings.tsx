@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -19,9 +18,19 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ShoppingCart, ArrowRight } from "lucide-react";
+import { ShoppingCart, ArrowRight, Star, Plus, Minus } from "lucide-react";
 
 interface PrintSettingsProps {}
+
+interface RelatedProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  rating: number;
+  reviews: number;
+}
 
 const PrintSettings: React.FC<PrintSettingsProps> = () => {
   const location = useLocation();
@@ -39,6 +48,36 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
   const [rangeError, setRangeError] = useState<string | null>(null);
   const [uniquePages, setUniquePages] = useState<number[]>([]);
   
+  const relatedProducts: RelatedProduct[] = [
+    {
+      id: "p1",
+      name: "Fevistik Glue Stick",
+      description: "15 g",
+      price: 40,
+      image: "https://m.media-amazon.com/images/I/61eDx+Xm+HL._AC_UF894,1000_QL80_.jpg",
+      rating: 4.5,
+      reviews: 6473
+    },
+    {
+      id: "p2",
+      name: "Faber-Castell Highlighter Pen",
+      description: "Multicolor 5 pcs",
+      price: 125,
+      image: "https://m.media-amazon.com/images/I/71mCwUYaJQL._AC_UF350,350_QL80_.jpg",
+      rating: 4.7,
+      reviews: 1601
+    },
+    {
+      id: "p3",
+      name: "Classmate Exercise Single Line Notebook",
+      description: "172 Pages",
+      price: 60,
+      image: "https://www.bigbasket.com/media/uploads/p/l/40199255_3-classmate-single-line-long-notebook-30x18-cm-172-pages.jpg",
+      rating: 4.2,
+      reviews: 7717
+    }
+  ];
+
   useEffect(() => {
     parseCustomRange();
   }, [pageRangeType, customRange, totalPages]);
@@ -183,6 +222,13 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     setPrice(totalPrice);
   };
 
+  const handleAddRelatedProduct = (product: RelatedProduct) => {
+    toast({
+      title: "Product Added",
+      description: `${product.name} added to cart`
+    });
+  };
+
   const handleAddToCart = () => {
     if (pageRangeType === "custom" && !customRange) {
       toast({
@@ -273,6 +319,20 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
 
   const decrementCopies = () => {
     setCopies(prev => (prev > 1 ? prev - 1 : 1));
+  };
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      if (i <= rating) {
+        stars.push(<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />);
+      } else if (i - rating < 1) {
+        stars.push(<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />);
+      } else {
+        stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
+      }
+    }
+    return stars;
   };
 
   return (
@@ -493,6 +553,50 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+          
+          {/* You Might Also Like Section */}
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6">You might also like</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {relatedProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <div className="p-4">
+                    <div className="w-full h-48 flex items-center justify-center mb-4">
+                      <img 
+                        src={product.image} 
+                        alt={product.name} 
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <p className="text-sm text-gray-500">{product.description}</p>
+                      <h3 className="font-semibold">{product.name}</h3>
+                      <div className="flex items-center mt-1">
+                        <div className="flex mr-1">
+                          {renderStars(product.rating)}
+                        </div>
+                        <span className="text-xs text-gray-500">({product.reviews.toLocaleString()})</span>
+                      </div>
+                      <p className="font-bold mt-1">₹{product.price}</p>
+                    </div>
+                    <Button 
+                      onClick={() => handleAddRelatedProduct(product)} 
+                      variant="outline" 
+                      className="w-full border-green-500 text-green-600 hover:bg-green-50"
+                    >
+                      ADD
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            <div className="flex justify-center mt-4">
+              <Button variant="ghost" className="text-green-600">
+                See more like this
+                <ArrowRight className="ml-1 w-4 h-4" />
+              </Button>
             </div>
           </div>
           

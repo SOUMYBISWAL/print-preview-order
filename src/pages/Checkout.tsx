@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -42,7 +41,6 @@ const Checkout = () => {
   
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
     phone: "",
     address: "",
     city: "",
@@ -62,8 +60,8 @@ const Checkout = () => {
     e.preventDefault();
     
     // Validate form
-    const { name, email, phone, address, city, state, pincode } = formData;
-    if (!name || !email || !phone || !address || !city || !state || !pincode) {
+    const { name, phone, address, city, state, pincode } = formData;
+    if (!name || !phone || !address || !city || !state || !pincode) {
       toast.error("Please fill all the required fields");
       return;
     }
@@ -104,30 +102,16 @@ const Checkout = () => {
                 </CardHeader>
                 <CardContent>
                   <form className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input
-                          id="name"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          placeholder="Enter your full name"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="email">Email Address</Label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="Enter your email address"
-                          required
-                        />
-                      </div>
+                    <div>
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Enter your full name"
+                        required
+                      />
                     </div>
                     
                     <div>
