@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, User, Search, LogIn, Package } from "lucide-react";
+import { ShoppingCart, User, Search, LogIn, Package, Mic } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -72,7 +72,7 @@ const Navbar = () => {
   };
   
   return (
-    <header className="border-b border-gray-200">
+    <header className="border-b border-gray-200 bg-white">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center">
@@ -95,11 +95,18 @@ const Navbar = () => {
           
           <div className="hidden md:flex items-center flex-grow mx-10">
             <div className="relative w-full max-w-lg">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-              <Input 
-                placeholder="Search for documents, templates and more" 
-                className="w-full pl-10"
-              />
+              <div className="relative w-full flex items-center rounded-full border border-gray-300 bg-gray-50">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <Input 
+                  placeholder="Search for documents, templates and more" 
+                  className="w-full pl-10 pr-12 py-2 border-none rounded-full bg-transparent focus:ring-0"
+                />
+                <div className="absolute right-2 top-1.5">
+                  <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 bg-gray-200">
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
           
