@@ -223,6 +223,28 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
   };
 
   const handleAddRelatedProduct = (product: RelatedProduct) => {
+    // Create a cart item for the related product
+    const productItem = {
+      id: `rel-${product.id}-${Math.random().toString(36).substr(2, 9)}`,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      type: 'related-product'
+    };
+    
+    // Get existing cart items
+    const cartItems = JSON.parse(localStorage.getItem('printCart') || '[]');
+    
+    // Add new item to cart
+    cartItems.push(productItem);
+    
+    // Update localStorage
+    localStorage.setItem('printCart', JSON.stringify(cartItems));
+    
+    // Dispatch event to update cart count in navbar
+    window.dispatchEvent(new Event('cartUpdated'));
+    
     toast({
       title: "Product Added",
       description: `${product.name} added to cart`
@@ -319,6 +341,18 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
 
   const decrementCopies = () => {
     setCopies(prev => (prev > 1 ? prev - 1 : 1));
+  };
+
+  const handleSeeMoreLikeThis = () => {
+    // For now, just navigate to a section of the homepage or show a toast
+    // In a real app, this would navigate to a category page
+    toast({
+      title: "More Products",
+      description: "Navigating to more products like these"
+    });
+    
+    // Navigate to home page with a category query parameter
+    navigate("/?category=stationery");
   };
 
   const renderStars = (rating: number) => {
@@ -473,7 +507,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                           onClick={decrementCopies}
                           disabled={copies <= 1}
                         >
-                          -
+                          <Minus className="h-4 w-4" />
                         </Button>
                         <Input
                           type="number"
@@ -493,7 +527,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
                           size="icon"
                           onClick={incrementCopies}
                         >
-                          +
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -593,7 +627,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
               ))}
             </div>
             <div className="flex justify-center mt-4">
-              <Button variant="ghost" className="text-green-600">
+              <Button variant="ghost" className="text-green-600" onClick={handleSeeMoreLikeThis}>
                 See more like this
                 <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
