@@ -200,7 +200,7 @@ const Checkout = () => {
                   <CardTitle>Delivery Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form className="space-y-4">
+                  <form className="space-y-4" onSubmit={handleSubmit}>
                     <div>
                       <Label htmlFor="name">Full Name</Label>
                       <Input
@@ -277,7 +277,7 @@ const Checkout = () => {
                     <Button
                       className="w-full mt-4"
                       size="lg"
-                      onClick={handleSubmit}
+                      type="submit"
                     >
                       Place Order
                     </Button>

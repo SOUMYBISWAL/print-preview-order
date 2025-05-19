@@ -18,11 +18,16 @@ const OrderConfirmation = () => {
   const location = useLocation();
   const orderDetails = location.state || {
     orderId: "Unknown",
-    price: 0,
-    fileCount: 0,
-    printType: "bw",
-    paperType: "standard",
-    copies: 1
+    orderItems: [],
+    subtotal: 0,
+    deliveryFee: 0,
+    total: 0,
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+    phone: ""
   };
 
   const estimatedDelivery = () => {
@@ -35,6 +40,15 @@ const OrderConfirmation = () => {
       day: 'numeric', 
       month: 'short' 
     });
+  };
+
+  const getPaperTypeName = (type: string) => {
+    switch (type) {
+      case "standard": return "Standard (70 GSM)";
+      case "premium": return "Premium (90 GSM)";
+      case "glossy": return "Glossy (120 GSM)";
+      default: return type;
+    }
   };
 
   return (
@@ -78,34 +92,47 @@ const OrderConfirmation = () => {
               
               <Separator />
               
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h3 className="font-medium">Print Summary</h3>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Files</span>
-                  <span>{orderDetails.fileCount} file{orderDetails.fileCount !== 1 ? 's' : ''}</span>
+                {orderDetails.orderItems && orderDetails.orderItems.map((item: any, index: number) => (
+                  <div key={index} className="border-b pb-4 last:border-0">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium">Print Job ({item.fileCount || 1} file{(item.fileCount || 1) !== 1 ? 's' : ''})</p>
+                        <ul className="text-sm text-gray-500 mt-1 space-y-1">
+                          <li>Paper: {getPaperTypeName(item.paperType)}</li>
+                          <li>Print: {item.printType === 'bw' ? 'Black & White' : 'Color'}</li>
+                          <li>Side: {item.printSide === 'single' ? 'Single Sided' : 'Double Sided'}</li>
+                          <li>Copies: {item.copies}</li>
+                          <li>Pages: {item.pageRange || 'All Pages'}</li>
+                          <li>Total Pages: {item.totalPages || '—'}</li>
+                        </ul>
+                      </div>
+                      <p className="font-bold">₹{item.price ? item.price.toFixed(2) : '0.00'}</p>
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="flex justify-between">
+                  <p>Subtotal</p>
+                  <p>₹{orderDetails.subtotal ? orderDetails.subtotal.toFixed(2) : '0.00'}</p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Print Type</span>
-                  <span>{orderDetails.printType === 'bw' ? 'Black & White' : 'Color'}</span>
+                
+                <div className="flex justify-between">
+                  <p>Delivery Fee</p>
+                  <p>{orderDetails.deliveryFee === 0 ? (
+                    <span className="text-green-600">FREE</span>
+                  ) : (
+                    <span>₹{orderDetails.deliveryFee ? orderDetails.deliveryFee.toFixed(2) : '0.00'}</span>
+                  )}</p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Paper Type</span>
-                  <span>
-                    {orderDetails.paperType === 'standard' ? 'Standard (70 GSM)' :
-                     orderDetails.paperType === 'premium' ? 'Premium (90 GSM)' : 'Glossy (120 GSM)'}
-                  </span>
+                
+                <Separator />
+                
+                <div className="flex justify-between font-bold">
+                  <p>Total</p>
+                  <p>₹{orderDetails.total ? orderDetails.total.toFixed(2) : '0.00'}</p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Copies</span>
-                  <span>{orderDetails.copies}</span>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="flex justify-between font-medium">
-                <span>Total</span>
-                <span>₹{orderDetails.price.toFixed(2)}</span>
               </div>
             </CardContent>
           </Card>
@@ -119,16 +146,16 @@ const OrderConfirmation = () => {
                 <div>
                   <h3 className="font-medium">Delivery Address</h3>
                   <address className="not-italic text-gray-600 mt-1">
-                    {orderDetails.name}<br />
-                    {orderDetails.address}<br />
-                    {orderDetails.city}, {orderDetails.state} {orderDetails.pincode}
+                    {orderDetails.name || 'N/A'}<br />
+                    {orderDetails.address || 'N/A'}<br />
+                    {orderDetails.city || 'N/A'}, {orderDetails.state || 'N/A'} {orderDetails.pincode || 'N/A'}
                   </address>
                 </div>
                 
                 <div>
                   <h3 className="font-medium">Contact Information</h3>
-                  <p className="text-gray-600 mt-1">{orderDetails.email}</p>
-                  <p className="text-gray-600">{orderDetails.phone}</p>
+                  <p className="text-gray-600 mt-1">{orderDetails.email || 'N/A'}</p>
+                  <p className="text-gray-600">{orderDetails.phone || 'N/A'}</p>
                 </div>
                 
                 <div className="bg-blue-50 p-4 rounded-md">
