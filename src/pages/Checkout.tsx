@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 interface PrintSummary {
+  id?: string;
   paperType: string;
   printType: string;
   printSide: string;
@@ -28,6 +30,10 @@ interface PrintSummary {
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState<PrintSummary[]>([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [deliveryFee, setDeliveryFee] = useState(0);
+  
   const printSummary: PrintSummary = location.state || {
     paperType: 'standard',
     printType: 'bw',
@@ -47,6 +53,19 @@ const Checkout = () => {
     state: "",
     pincode: "",
   });
+
+  // Load cart items and calculate prices
+  useEffect(() => {
+    const items = JSON.parse(localStorage.getItem('printCart') || '[]');
+    setCartItems(items);
+    
+    // Calculate subtotal
+    const subtotal = items.reduce((sum: number, item: PrintSummary) => sum + item.price, 0);
+    setTotalPrice(subtotal);
+    
+    // Set delivery fee
+    setDeliveryFee(subtotal >= 99 ? 0 : 20);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -71,10 +90,17 @@ const Checkout = () => {
     navigate("/order-confirmation", { 
       state: { 
         orderId: "PL" + Math.floor(100000 + Math.random() * 900000),
-        ...printSummary,
+        orderItems: cartItems,
+        subtotal: totalPrice,
+        deliveryFee: deliveryFee,
+        total: totalPrice + deliveryFee,
         ...formData 
       } 
     });
+
+    // Clear cart after successful order
+    localStorage.setItem('printCart', JSON.stringify([]));
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const getPaperTypeName = (type: string) => {
@@ -95,7 +121,80 @@ const Checkout = () => {
           <h1 className="text-3xl font-bold mb-6">Checkout</h1>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
+            {/* Order Summary - Now displayed first */}
+            <div className="lg:col-span-3">
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {cartItems.map((item, index) => (
+                      <div key={item.id || index} className="border-b pb-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">Print Job ({item.fileCount} file{item.fileCount !== 1 ? 's' : ''})</p>
+                            <ul className="text-sm text-gray-500 mt-1 space-y-1">
+                              <li>Paper: {getPaperTypeName(item.paperType)}</li>
+                              <li>Print: {item.printType === 'bw' ? 'Black & White' : 'Color'}</li>
+                              <li>Side: {item.printSide === 'single' ? 'Single Sided' : 'Double Sided'}</li>
+                              <li>Copies: {item.copies}</li>
+                              <li>Pages: {item.pageRange}</li>
+                              <li>Total Pages: {item.totalPages}</li>
+                            </ul>
+                          </div>
+                          <p className="font-bold">₹{item.price.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="flex justify-between">
+                      <p>Subtotal</p>
+                      <p>₹{totalPrice.toFixed(2)}</p>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <p>Delivery Fee</p>
+                      <p>{deliveryFee === 0 ? (
+                        <span className="text-green-600">FREE</span>
+                      ) : (
+                        <span>₹{deliveryFee.toFixed(2)}</span>
+                      )}</p>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between font-bold">
+                      <p>Total</p>
+                      <p>₹{(totalPrice + deliveryFee).toFixed(2)}</p>
+                    </div>
+                    
+                    {deliveryFee === 0 && (
+                      <div className="mt-2 p-2 bg-green-50 text-green-700 rounded-md text-sm flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        Free delivery applied!
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Delivery Details - Now displayed second */}
+            <div className="lg:col-span-3">
               <Card className="mb-6">
                 <CardHeader>
                   <CardTitle>Delivery Details</CardTitle>
@@ -183,76 +282,6 @@ const Checkout = () => {
                       Place Order
                     </Button>
                   </form>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div>
-              <Card className="sticky top-4">
-                <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Files</p>
-                      <p>{printSummary.fileCount} file{printSummary.fileCount !== 1 ? 's' : ''}</p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm text-gray-500">Print Specifications</p>
-                      <ul className="text-sm space-y-1">
-                        <li>Paper: {getPaperTypeName(printSummary.paperType)}</li>
-                        <li>Print: {printSummary.printType === 'bw' ? 'Black & White' : 'Color'}</li>
-                        <li>Side: {printSummary.printSide === 'single' ? 'Single Sided' : 'Double Sided'}</li>
-                        <li>Copies: {printSummary.copies}</li>
-                        <li>Pages: {printSummary.pageRange}</li>
-                      </ul>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex justify-between">
-                      <p>Subtotal</p>
-                      <p>₹{printSummary.price.toFixed(2)}</p>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <p>Delivery Fee</p>
-                      <p>{printSummary.price >= 99 ? (
-                        <span className="text-green-600">FREE</span>
-                      ) : (
-                        <span>₹20.00</span>
-                      )}</p>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex justify-between font-bold">
-                      <p>Total</p>
-                      <p>₹{(printSummary.price + (printSummary.price >= 99 ? 0 : 20)).toFixed(2)}</p>
-                    </div>
-                    
-                    {printSummary.price >= 99 && (
-                      <div className="mt-2 p-2 bg-green-50 text-green-700 rounded-md text-sm flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        Free delivery applied!
-                      </div>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
             </div>
