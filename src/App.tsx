@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,7 +9,8 @@ import PrintSettings from "./pages/PrintSettings";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import Cart from "./pages/Cart";
-import NotFound from "./pages/NotFound";
+import NotFound from './pages/NotFound';
+import Admin from './pages/Admin';
 import Login from "./pages/Login";
 import TrackOrder from "./pages/TrackOrder";
 import Account from "./pages/Account";
@@ -33,6 +33,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/track-order" element={<TrackOrder />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
