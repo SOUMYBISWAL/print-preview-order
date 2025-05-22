@@ -54,40 +54,27 @@ const Checkout = () => {
     setPaymentStep(true);
   };
 
-  const handlePayment = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const orderData = {
-        userId: user.id,
-        status: "Pending",
-        totalAmount: totalPrice + deliveryFee,
-        files: cartItems.map(item => item.id || ''),
-        location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
-        deliveryDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) // 2 days from now
-      };
+  const handlePayment = () => {
+    const orderData = {
+      id: "PL" + Math.floor(100000 + Math.random() * 900000),
+      customerName: name,
+      files: cartItems.map(item => item.id || ''),
+      status: "Pending",
+      totalAmount: totalPrice + deliveryFee,
+      dateCreated: new Date().toISOString(),
+      mobile,
+      location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
+      paymentMethod
+    };
 
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData)
-      });
+    // Save order to localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    localStorage.setItem('orders', JSON.stringify([...existingOrders, orderData]));
 
-      if (!response.ok) {
-        throw new Error('Failed to create order');
-      }
-
-      const createdOrder = await response.json();
-      
-      // Clear cart and navigate to confirmation
-      navigate("/order-confirmation", { state: createdOrder });
-      localStorage.setItem('printCart', JSON.stringify([]));
-      window.dispatchEvent(new Event('cartUpdated'));
-    } catch (error) {
-      console.error('Error creating order:', error);
-      alert('Failed to create order. Please try again.');
-    }
+    // Clear cart and navigate to confirmation
+    navigate("/order-confirmation", { state: orderData });
+    localStorage.setItem('printCart', JSON.stringify([]));
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   return (
