@@ -43,25 +43,33 @@ const Checkout = () => {
     setDeliveryFee(subtotal >= 99 ? 0 : 20);
   }, []);
 
+  const [paymentStep, setPaymentStep] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("upi");
+
   const handleSubmit = () => {
     if (!name || !mobile) {
       alert("Please fill in name and mobile number");
       return;
     }
+    setPaymentStep(true);
+  };
 
-    navigate("/order-confirmation", {
-      state: {
-        orderId: "PL" + Math.floor(100000 + Math.random() * 900000),
-        orderItems: cartItems,
-        subtotal: totalPrice,
-        deliveryFee: deliveryFee,
-        total: totalPrice + deliveryFee,
-        name,
-        mobile,
-        address,
-        location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other"
-      }
-    });
+  const handlePayment = () => {
+    // Here you can integrate actual payment gateway
+    const orderData = {
+      orderId: "PL" + Math.floor(100000 + Math.random() * 900000),
+      orderItems: cartItems,
+      subtotal: totalPrice,
+      deliveryFee: deliveryFee,
+      total: totalPrice + deliveryFee,
+      name,
+      mobile,
+      location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
+      paymentMethod
+    };
+
+    // For now, simulate payment success
+    navigate("/order-confirmation", { state: orderData });
     localStorage.setItem('printCart', JSON.stringify([]));
     window.dispatchEvent(new Event('cartUpdated'));
   };
@@ -146,9 +154,50 @@ const Checkout = () => {
                     Free delivery applied!
                   </div>
                 )}
-                <Button className="w-full mt-4" size="lg" onClick={handleSubmit}>
-                  Place Order
-                </Button>
+                {!paymentStep ? (
+                  <Button className="w-full mt-4" size="lg" onClick={handleSubmit}>
+                    Continue to Payment
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <h3 className="font-medium">Select Payment Method</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id="upi"
+                          value="upi"
+                          checked={paymentMethod === "upi"}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <Label htmlFor="upi">UPI Payment</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id="card"
+                          value="card"
+                          checked={paymentMethod === "card"}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <Label htmlFor="card">Credit/Debit Card</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id="netbanking"
+                          value="netbanking"
+                          checked={paymentMethod === "netbanking"}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <Label htmlFor="netbanking">Net Banking</Label>
+                      </div>
+                    </div>
+                    <Button className="w-full mt-4" size="lg" onClick={handlePayment}>
+                      Pay ₹{(totalPrice + deliveryFee).toFixed(2)}
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
