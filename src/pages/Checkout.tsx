@@ -55,8 +55,9 @@ const Checkout = () => {
   };
 
   const handlePayment = () => {
+    const orderId = "PL" + Math.floor(100000 + Math.random() * 900000);
     const orderData = {
-      id: "PL" + Math.floor(100000 + Math.random() * 900000),
+      orderId: orderId,
       customerName: name,
       files: cartItems.map(item => item.id || ''),
       status: "Pending",
@@ -64,7 +65,9 @@ const Checkout = () => {
       dateCreated: new Date().toISOString(),
       mobile,
       location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
-      paymentMethod
+      paymentMethod,
+      deliveryFee,
+      subtotal: totalPrice
     };
 
     // Save order to localStorage

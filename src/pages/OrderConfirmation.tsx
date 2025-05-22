@@ -71,7 +71,7 @@ const OrderConfirmation = () => {
             <CardHeader>
               <CardTitle className="flex justify-between">
                 <span>Order Details</span>
-                <span className="text-green-600">#{orderDetails.orderId}</span>
+                <span className="text-green-600">#{orderDetails.orderId || 'Unknown'}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
