@@ -36,10 +36,13 @@ const Login = () => {
       // In a real application, you would verify credentials against a backend
       if (loginMobile && loginPassword) {
         // Store user info in localStorage (in a real app, use tokens)
+        // Admin credentials check (for demo purposes - in production use proper authentication)
+        const isAdmin = loginMobile === "9999999999" && loginPassword === "admin123";
         const user = {
           mobile: loginMobile,
-          name: `User-${loginMobile.substring(6)}`, // Simple name extraction for demo
-          isLoggedIn: true
+          name: isAdmin ? "Admin" : `User-${loginMobile.substring(6)}`,
+          isLoggedIn: true,
+          isAdmin: isAdmin
         };
         localStorage.setItem('user', JSON.stringify(user));
         

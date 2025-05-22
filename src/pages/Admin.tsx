@@ -25,7 +25,15 @@ interface Stats {
 }
 
 const Admin = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.isAdmin) {
+      navigate('/login');
+    }
+  }, [navigate]);
   const [stats, setStats] = useState<Stats>({
     totalOrders: 0,
     totalRevenue: 0,
