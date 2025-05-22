@@ -33,7 +33,6 @@ const Checkout = () => {
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
-  const [address, setAddress] = useState("");
   const [location, setLocation] = useState("cutm-bbsr");
 
   useEffect(() => {
@@ -45,8 +44,8 @@ const Checkout = () => {
   }, []);
 
   const handleSubmit = () => {
-    if (!name || !mobile || !address) {
-      alert("Please fill in all delivery details");
+    if (!name || !mobile) {
+      alert("Please fill in name and mobile number");
       return;
     }
 
@@ -97,16 +96,6 @@ const Checkout = () => {
                     placeholder="Enter your mobile number"
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    placeholder="Enter your address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
                   />
                 </div>
 
