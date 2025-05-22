@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -21,6 +31,10 @@ const Checkout = () => {
   const [cartItems, setCartItems] = useState<PrintSummary[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [deliveryFee, setDeliveryFee] = useState(0);
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [address, setAddress] = useState("");
+  const [location, setLocation] = useState("cutm-bbsr");
 
   useEffect(() => {
     const items = JSON.parse(localStorage.getItem('printCart') || '[]');
@@ -31,13 +45,22 @@ const Checkout = () => {
   }, []);
 
   const handleSubmit = () => {
+    if (!name || !mobile || !address) {
+      alert("Please fill in all delivery details");
+      return;
+    }
+
     navigate("/order-confirmation", {
       state: {
         orderId: "PL" + Math.floor(100000 + Math.random() * 900000),
         orderItems: cartItems,
         subtotal: totalPrice,
         deliveryFee: deliveryFee,
-        total: totalPrice + deliveryFee
+        total: totalPrice + deliveryFee,
+        name,
+        mobile,
+        address,
+        location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other"
       }
     });
     localStorage.setItem('printCart', JSON.stringify([]));
@@ -50,6 +73,59 @@ const Checkout = () => {
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Checkout</h1>
+
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Delivery Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="mobile">Mobile Number</Label>
+                  <Input
+                    id="mobile"
+                    placeholder="Enter your mobile number"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    placeholder="Enter your address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location">Delivery Location</Label>
+                  <Select value={location} onValueChange={setLocation}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select delivery location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cutm-bbsr">CUTM Bhubaneswar</SelectItem>
+                      <SelectItem value="other">Other Location</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
