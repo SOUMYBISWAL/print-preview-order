@@ -55,20 +55,23 @@ const Checkout = () => {
   };
 
   const handlePayment = () => {
-    // Here you can integrate actual payment gateway
     const orderData = {
-      orderId: "PL" + Math.floor(100000 + Math.random() * 900000),
-      orderItems: cartItems,
-      subtotal: totalPrice,
-      deliveryFee: deliveryFee,
-      total: totalPrice + deliveryFee,
-      name,
+      id: "PL" + Math.floor(100000 + Math.random() * 900000),
+      customerName: name,
+      files: cartItems.map(item => item.id || ''),
+      status: "Pending",
+      totalAmount: totalPrice + deliveryFee,
+      dateCreated: new Date().toISOString(),
       mobile,
       location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
       paymentMethod
     };
 
-    // For now, simulate payment success
+    // Save order to localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    localStorage.setItem('orders', JSON.stringify([...existingOrders, orderData]));
+
+    // Clear cart and navigate to confirmation
     navigate("/order-confirmation", { state: orderData });
     localStorage.setItem('printCart', JSON.stringify([]));
     window.dispatchEvent(new Event('cartUpdated'));
