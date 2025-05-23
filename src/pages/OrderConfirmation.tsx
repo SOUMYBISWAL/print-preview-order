@@ -173,7 +173,7 @@ const OrderConfirmation = () => {
             </CardContent>
             <CardFooter>
               <Button asChild className="w-full">
-                <Link to="/order-tracking">Track Order</Link>
+                <Link to="/track-order">Track Order</Link>
               </Button>
             </CardFooter>
           </Card>
