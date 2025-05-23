@@ -128,7 +128,7 @@ const OrderConfirmation = () => {
                 
                 <div className="flex justify-between font-bold">
                   <p>Total</p>
-                  <p>₹{orderDetails.total ? orderDetails.total.toFixed(2) : '0.00'}</p>
+                  <p>₹{(Number(orderDetails.subtotal) + Number(orderDetails.deliveryFee)).toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
