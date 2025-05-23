@@ -20,6 +20,7 @@ import Privacy from "./pages/Privacy";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import RefundPolicy from "./pages/RefundPolicy";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
