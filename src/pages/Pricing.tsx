@@ -115,10 +115,28 @@ const Pricing = () => {
         </div>
 
         <div className="max-w-3xl mx-auto text-center bg-gray-50 p-8 rounded-lg">
-          <h2 className="text-2xl font-bold mb-4">Bulk Orders?</h2>
-          <p className="text-gray-600 mb-6">Contact us for special pricing on large orders</p>
+          <h2 className="text-2xl font-bold mb-4">Photo Frame Services</h2>
+          <p className="text-gray-600 mb-6">Get your precious memories framed in elegant designs. Multiple sizes and styles available.</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="text-center">
+              <p className="font-semibold">4x6"</p>
+              <p className="text-gray-600">₹199</p>
+            </div>
+            <div className="text-center">
+              <p className="font-semibold">5x7"</p>
+              <p className="text-gray-600">₹299</p>
+            </div>
+            <div className="text-center">
+              <p className="font-semibold">8x10"</p>
+              <p className="text-gray-600">₹499</p>
+            </div>
+            <div className="text-center">
+              <p className="font-semibold">11x14"</p>
+              <p className="text-gray-600">₹799</p>
+            </div>
+          </div>
           <Button asChild variant="outline">
-            <Link to="/contact">Contact Sales</Link>
+            <Link to="/upload">Order Now</Link>
           </Button>
         </div>
       </main>
