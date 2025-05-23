@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Building } from "lucide-react";
 
 const Contact = () => {
   const [name, setName] = useState("");
@@ -16,18 +16,24 @@ const Contact = () => {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
 
-    // Simulate sending message
-    setTimeout(() => {
+    try {
+      // Here you would normally send the data to your backend
+      // For now, we'll simulate a successful submission
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       toast.success("Message sent successfully!");
       setName("");
       setEmail("");
       setMessage("");
+    } catch (error) {
+      toast.error("Failed to send message. Please try again.");
+    } finally {
       setSending(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -85,6 +91,14 @@ const Contact = () => {
                 <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
                 <div className="space-y-4">
                   <div className="flex items-start">
+                    <Building className="w-5 h-5 text-gray-600 mt-1 mr-3" />
+                    <div>
+                      <p className="font-medium">Business Name</p>
+                      <p className="text-gray-600">PrintLite</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start">
                     <Mail className="w-5 h-5 text-gray-600 mt-1 mr-3" />
                     <div>
                       <p className="font-medium">Email</p>
@@ -105,7 +119,6 @@ const Contact = () => {
                     <div>
                       <p className="font-medium">Address</p>
                       <p className="text-gray-600">
-                        PrintLite<br />
                         Near CUTM Bhubaneswar<br />
                         Odisha
                       </p>
