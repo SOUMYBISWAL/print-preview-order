@@ -30,33 +30,12 @@ const TrackOrder = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in and load their orders
     const userStr = localStorage.getItem('user');
     if (userStr) {
-      // Simulate loading user orders
       setIsLoading(true);
-      setTimeout(() => {
-        const mockOrders: Order[] = [
-          {
-            id: "ORD-1234567",
-            date: "2025-05-10",
-            status: "processing",
-            price: 450,
-            items: 45,
-            deliveryDate: "2025-05-14",
-          },
-          {
-            id: "ORD-7654321",
-            date: "2025-05-05",
-            status: "delivered",
-            price: 280,
-            items: 28,
-            deliveryDate: "2025-05-08",
-          },
-        ];
-        setOrders(mockOrders);
-        setIsLoading(false);
-      }, 1000);
+      const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      setOrders(storedOrders);
+      setIsLoading(false);
     }
   }, []);
 
@@ -64,21 +43,20 @@ const TrackOrder = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call to track order
-    setTimeout(() => {
-      if (trackingId) {
-        const mockOrder: Order = {
-          id: trackingId,
-          date: "2025-05-08",
-          status: "shipped",
-          price: 320,
-          items: 32,
-          deliveryDate: "2025-05-12",
-        };
-        setTrackedOrder(mockOrder);
-      }
-      setIsLoading(false);
-    }, 1000);
+    const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const foundOrder = storedOrders.find((order: any) => order.orderId === trackingId);
+    
+    if (foundOrder) {
+      setTrackedOrder({
+        id: foundOrder.orderId,
+        date: foundOrder.dateCreated.split('T')[0],
+        status: foundOrder.status.toLowerCase(),
+        price: foundOrder.totalAmount,
+        items: foundOrder.files.length,
+        deliveryDate: new Date(foundOrder.dateCreated).toLocaleDateString(),
+      });
+    }
+    setIsLoading(false);
   };
 
   const getStatusColor = (status: OrderStatus) => {
