@@ -32,10 +32,7 @@ const OrderConfirmation = () => {
 
   const estimatedDelivery = () => {
     const today = new Date();
-    const deliveryDate = new Date(today);
-    deliveryDate.setDate(today.getDate() + 2); // Assuming 2-day delivery
-    
-    return deliveryDate.toLocaleDateString('en-US', { 
+    return today.toLocaleDateString('en-US', { 
       weekday: 'short', 
       day: 'numeric', 
       month: 'short' 
@@ -146,16 +143,16 @@ const OrderConfirmation = () => {
                 <div>
                   <h3 className="font-medium">Delivery Address</h3>
                   <address className="not-italic text-gray-600 mt-1">
-                    {orderDetails.name || 'N/A'}<br />
-                    {orderDetails.address || 'N/A'}<br />
-                    {orderDetails.city || 'N/A'}, {orderDetails.state || 'N/A'} {orderDetails.pincode || 'N/A'}
+                    {orderDetails.name}<br />
+                    CUTM Bhubaneswar<br />
+                    Bhubaneswar, Odisha
                   </address>
                 </div>
                 
                 <div>
                   <h3 className="font-medium">Contact Information</h3>
-                  <p className="text-gray-600 mt-1">{orderDetails.email || 'N/A'}</p>
-                  <p className="text-gray-600">{orderDetails.phone || 'N/A'}</p>
+                  <p className="text-gray-600 mt-1">{orderDetails.customerName}</p>
+                  <p className="text-gray-600">{orderDetails.mobile}</p>
                 </div>
                 
                 <div className="bg-blue-50 p-4 rounded-md">
