@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
 
 const Contact = () => {
   const [name, setName] = useState("");
@@ -88,7 +88,7 @@ const Contact = () => {
                     <Mail className="w-5 h-5 text-gray-600 mt-1 mr-3" />
                     <div>
                       <p className="font-medium">Email</p>
-                      <p className="text-gray-600">support@printlite.com</p>
+                      <p className="text-gray-600">printlite1@gmail.com</p>
                     </div>
                   </div>
                   
@@ -96,7 +96,7 @@ const Contact = () => {
                     <Phone className="w-5 h-5 text-gray-600 mt-1 mr-3" />
                     <div>
                       <p className="font-medium">Phone</p>
-                      <p className="text-gray-600">+91 987-654-3210</p>
+                      <p className="text-gray-600">+91 7377681612</p>
                     </div>
                   </div>
                   
@@ -105,10 +105,18 @@ const Contact = () => {
                     <div>
                       <p className="font-medium">Address</p>
                       <p className="text-gray-600">
-                        PrintLite Office<br />
-                        CUTM Bhubaneswar Campus<br />
-                        Bhubaneswar, Odisha
+                        PrintLite<br />
+                        Near CUTM Bhubaneswar<br />
+                        Odisha
                       </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start">
+                    <Clock className="w-5 h-5 text-gray-600 mt-1 mr-3" />
+                    <div>
+                      <p className="font-medium">Working Hours</p>
+                      <p className="text-gray-600">24/7</p>
                     </div>
                   </div>
                 </div>
