@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Printer, Check, Clock, Cube } from 'lucide-react';
+import { Printer, Check, Clock, Package } from 'lucide-react';
 import Navbar from "@/components/Navbar";
 
 interface Order {
@@ -143,7 +142,7 @@ const Admin = () => {
       case 'Pending':
         return <Clock className="h-4 w-4" />;
       default:
-        return <Cube className="h-4 w-4" />;
+        return <Package className="h-4 w-4" />;
     }
   };
 
@@ -197,7 +196,7 @@ const Admin = () => {
                         <p className="text-sm font-medium text-gray-600">Total Orders</p>
                         <p className="text-3xl font-bold">{stats.totalOrders}</p>
                       </div>
-                      <Cube className="h-8 w-8 text-blue-500" />
+                      <Package className="h-8 w-8 text-blue-500" />
                     </div>
                   </CardContent>
                 </Card>
