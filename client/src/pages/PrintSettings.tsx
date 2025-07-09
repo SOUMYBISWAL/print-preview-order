@@ -271,7 +271,6 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     }
     
     // Add to cart
-    // In a real app, you would store this in localStorage or a state management system
     const cartItem = {
       paperType,
       printType,
@@ -285,7 +284,19 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
       id: Math.random().toString(36).substr(2, 9)
     };
     
-    // For simplicity, we'll just store the latest cart item in localStorage
+    // Save print settings for checkout
+    const printSettings = {
+      totalPages: calculatedPages,
+      printType: printType === "bw" ? "black_white" : "color",
+      paperSize: "A4",
+      paperType: paperType === "standard" ? "70gsm" : paperType === "premium" ? "90gsm" : "120gsm",
+      sides: printSide,
+      binding: "none",
+      copies: copies
+    };
+    localStorage.setItem('printSettings', JSON.stringify(printSettings));
+    
+    // Store cart items
     const cartItems = JSON.parse(localStorage.getItem('printCart') || '[]');
     cartItems.push(cartItem);
     localStorage.setItem('printCart', JSON.stringify(cartItems));

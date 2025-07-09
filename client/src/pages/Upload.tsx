@@ -6,6 +6,7 @@ import { Upload as UploadIcon, FileText, FileImage } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+// Removed AWS Amplify imports for guest uploads
 
 interface FileWithPages extends File {
   pageCount?: number;
@@ -18,6 +19,7 @@ const Upload = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isCountingPages, setIsCountingPages] = useState(false);
   const [totalPageCount, setTotalPageCount] = useState(0);
+  // Removed amplify files state for guest uploads
 
   const countPagesInFile = async (file: FileWithPages): Promise<number> => {
     return new Promise((resolve) => {
@@ -142,7 +144,8 @@ const Upload = () => {
     navigate("/print-settings", { 
       state: { 
         fileCount: files.length, 
-        totalPages: totalPageCount 
+        totalPages: totalPageCount,
+        files: files
       }
     });
   };

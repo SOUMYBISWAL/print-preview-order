@@ -54,30 +54,73 @@ const Checkout = () => {
     setPaymentStep(true);
   };
 
-  const handlePayment = () => {
-    const orderId = "PL" + Math.floor(100000 + Math.random() * 900000);
-    const orderData = {
-      orderId: orderId,
-      customerName: name,
-      files: cartItems.map(item => item.id || ''),
-      status: "Pending",
-      totalAmount: totalPrice + deliveryFee,
-      dateCreated: new Date().toISOString(),
-      mobile,
-      location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
-      paymentMethod,
-      deliveryFee,
-      subtotal: totalPrice
-    };
+  const handlePayment = async () => {
+    try {
+      // Get cart details and other data from localStorage
+      const printSettings = JSON.parse(localStorage.getItem('printSettings') || '{}');
+      
+      const orderData = {
+        customerName: name,
+        email: name.toLowerCase().replace(/\s+/g, '') + '@email.com', // Generate email from name
+        phone: mobile,
+        totalAmount: (totalPrice + deliveryFee).toString(),
+        totalPages: printSettings.totalPages || 1,
+        printType: printSettings.printType || 'black_white',
+        paperSize: printSettings.paperSize || 'A4',
+        paperType: printSettings.paperType || '70gsm',
+        sides: printSettings.sides || 'single',
+        binding: printSettings.binding || 'none',
+        copies: printSettings.copies || 1,
+        deliveryAddress: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other Location",
+        paymentMethod: paymentMethod,
+        paymentStatus: 'completed', // Assuming payment is completed
+        fileNames: cartItems.map(item => item.id || 'uploaded_file'),
+        specialInstructions: null,
+        userId: null // Guest order
+      };
 
-    // Save order to localStorage
-    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    localStorage.setItem('orders', JSON.stringify([...existingOrders, orderData]));
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
 
-    // Clear cart and navigate to confirmation
-    navigate("/order-confirmation", { state: orderData });
-    localStorage.setItem('printCart', JSON.stringify([]));
-    window.dispatchEvent(new Event('cartUpdated'));
+      if (!response.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Save order locally for tracking purposes
+        const localOrderData = {
+          orderId: result.order.id,
+          customerName: name,
+          files: cartItems.map(item => item.id || ''),
+          status: "Processing",
+          totalAmount: totalPrice + deliveryFee,
+          dateCreated: new Date().toISOString(),
+          mobile,
+          location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
+          paymentMethod,
+          deliveryFee,
+          subtotal: totalPrice
+        };
+
+        // Clear cart and navigate to confirmation
+        navigate("/order-confirmation", { state: localOrderData });
+        localStorage.setItem('printCart', JSON.stringify([]));
+        localStorage.removeItem('printSettings');
+        window.dispatchEvent(new Event('cartUpdated'));
+      } else {
+        throw new Error('Failed to create order');
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Failed to place order. Please try again.');
+    }
   };
 
   return (

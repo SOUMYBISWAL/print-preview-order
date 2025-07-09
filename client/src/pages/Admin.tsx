@@ -55,7 +55,55 @@ const Admin = () => {
   }, [navigate]);
 
   useEffect(() => {
-    // Load sample orders for demo
+    // Fetch orders from API
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/orders');
+      if (response.ok) {
+        const ordersData = await response.json();
+        const formattedOrders = ordersData.map((order: any) => ({
+          id: order.id.toString(),
+          customerName: order.customerName,
+          email: order.email,
+          phone: order.phone,
+          files: order.fileNames || [],
+          status: order.status,
+          totalAmount: parseFloat(order.totalAmount),
+          pages: order.totalPages,
+          dateCreated: new Date(order.createdAt).toLocaleDateString(),
+          printType: order.printType,
+          paperSize: order.paperSize,
+          sides: order.sides,
+          binding: order.binding || 'none',
+          deliveryAddress: order.deliveryAddress
+        }));
+        setOrders(formattedOrders);
+        calculateStats(formattedOrders);
+      } else {
+        // Fallback to sample data if API fails
+        loadSampleOrders();
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      // Fallback to sample data
+      loadSampleOrders();
+    }
+  };
+
+  const calculateStats = (ordersData: Order[]) => {
+    const stats = {
+      totalOrders: ordersData.length,
+      pendingOrders: ordersData.filter(order => order.status === 'pending').length,
+      inProgressOrders: ordersData.filter(order => order.status === 'processing' || order.status === 'printing').length,
+      totalRevenue: ordersData.reduce((sum, order) => sum + order.totalAmount, 0)
+    };
+    setStats(stats);
+  };
+
+  const loadSampleOrders = () => {
     const sampleOrders: Order[] = [
       {
         id: 'ORD-001',
@@ -108,15 +156,8 @@ const Admin = () => {
     ];
 
     setOrders(sampleOrders);
-    
-    // Calculate stats
-    setStats({
-      totalOrders: sampleOrders.length,
-      pendingOrders: sampleOrders.filter(order => order.status === 'Pending').length,
-      inProgressOrders: sampleOrders.filter(order => order.status === 'Printing').length,
-      totalRevenue: sampleOrders.reduce((sum, order) => sum + order.totalAmount, 0)
-    });
-  }, []);
+    calculateStats(sampleOrders);
+  };
 
   const updateOrderStatus = (orderId: string, newStatus: string) => {
     const updatedOrders = orders.map(order => 
