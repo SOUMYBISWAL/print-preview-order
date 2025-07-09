@@ -61,34 +61,42 @@ const Admin = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/orders');
-      if (response.ok) {
-        const ordersData = await response.json();
-        const formattedOrders = ordersData.map((order: any) => ({
-          id: order.id.toString(),
-          customerName: order.customerName,
-          email: order.email,
-          phone: order.phone,
-          files: order.fileNames || [],
-          status: order.status,
-          totalAmount: parseFloat(order.totalAmount),
-          pages: order.totalPages,
-          dateCreated: new Date(order.createdAt).toLocaleDateString(),
-          printType: order.printType,
-          paperSize: order.paperSize,
-          sides: order.sides,
-          binding: order.binding || 'none',
-          deliveryAddress: order.deliveryAddress
-        }));
-        setOrders(formattedOrders);
-        calculateStats(formattedOrders);
-      } else {
-        // Fallback to sample data if API fails
-        loadSampleOrders();
-      }
+      // Import Amplify API client
+      const { generateClient } = await import('aws-amplify/api');
+      const { listOrders } = await import('@/lib/graphql-queries');
+      
+      const client = generateClient();
+      
+      const result = await client.graphql({
+        query: listOrders,
+        variables: {
+          limit: 100 // Fetch up to 100 orders
+        }
+      });
+
+      const ordersData = result.data.listOrders.items;
+      const formattedOrders = ordersData.map((order: any) => ({
+        id: order.id,
+        customerName: order.customerName,
+        email: order.email,
+        phone: order.phone,
+        files: order.fileNames || [],
+        status: order.status.toLowerCase(),
+        totalAmount: order.totalAmount,
+        pages: order.totalPages,
+        dateCreated: new Date(order.createdAt).toLocaleDateString(),
+        printType: order.printType.replace('_', ' ').toLowerCase(),
+        paperSize: order.paperSize,
+        sides: order.sides.toLowerCase(),
+        binding: order.binding?.toLowerCase() || 'none',
+        deliveryAddress: order.deliveryAddress
+      }));
+      
+      setOrders(formattedOrders);
+      calculateStats(formattedOrders);
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      // Fallback to sample data
+      console.error('Error fetching orders from Amplify:', error);
+      // Fallback to sample data if Amplify API fails
       loadSampleOrders();
     }
   };

@@ -51,16 +51,32 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
 
   const handleUploadSuccess = ({ key }: { key?: string }) => {
     if (key) {
-      setUploadedFiles(prev => 
-        prev.map(file => 
+      setUploadedFiles(prev => {
+        const updated = prev.map(file => 
           file.key === key 
             ? { ...file, status: 'completed' as const, progress: 100 }
             : file
-        )
-      );
+        );
+        
+        // Get all completed files
+        const completedFiles = updated
+          .filter(f => f.status === 'completed')
+          .map(f => ({
+            key: f.key,
+            name: f.name,
+            size: f.size,
+            type: f.type
+          }));
+        
+        // Save to localStorage for checkout process
+        localStorage.setItem('amplifyFiles', JSON.stringify(completedFiles));
+        
+        // Notify parent component
+        onFilesUploaded(completedFiles);
+        
+        return updated;
+      });
       
-      const completedFiles = uploadedFiles.filter(f => f.status === 'completed' || f.key === key);
-      onFilesUploaded(completedFiles);
       toast.success("File uploaded successfully!");
     }
   };

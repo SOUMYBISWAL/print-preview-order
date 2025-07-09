@@ -56,47 +56,50 @@ const Checkout = () => {
 
   const handlePayment = async () => {
     try {
+      // Import Amplify API client
+      const { generateClient } = await import('aws-amplify/api');
+      const { createGuestOrder } = await import('@/lib/graphql-queries');
+      
+      const client = generateClient();
+      
       // Get cart details and other data from localStorage
       const printSettings = JSON.parse(localStorage.getItem('printSettings') || '{}');
       
-      const orderData = {
+      // Get amplify files if they exist
+      const amplifyFilesData = JSON.parse(localStorage.getItem('amplifyFiles') || '[]');
+      
+      const orderInput = {
         customerName: name,
-        email: name.toLowerCase().replace(/\s+/g, '') + '@email.com', // Generate email from name
+        email: name.toLowerCase().replace(/\s+/g, '') + '@gmail.com', // Generate email from name
         phone: mobile,
-        totalAmount: (totalPrice + deliveryFee).toString(),
+        totalAmount: totalPrice + deliveryFee,
         totalPages: printSettings.totalPages || 1,
-        printType: printSettings.printType || 'black_white',
-        paperSize: printSettings.paperSize || 'A4',
-        paperType: printSettings.paperType || '70gsm',
-        sides: printSettings.sides || 'single',
-        binding: printSettings.binding || 'none',
+        printType: printSettings.printType === 'color' ? 'COLOR' : 'BLACK_WHITE',
+        paperSize: 'A4',
+        paperType: printSettings.paperType === '90gsm' ? 'PREMIUM_90GSM' : 
+                   printSettings.paperType === '120gsm' ? 'GLOSSY_120GSM' : 'STANDARD_70GSM',
+        sides: printSettings.sides === 'double' ? 'DOUBLE' : 'SINGLE',
+        binding: 'NONE',
         copies: printSettings.copies || 1,
         deliveryAddress: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other Location",
-        paymentMethod: paymentMethod,
-        paymentStatus: 'completed', // Assuming payment is completed
+        paymentMethod: paymentMethod.toUpperCase(),
+        paymentStatus: 'COMPLETED',
         fileNames: cartItems.map(item => item.id || 'uploaded_file'),
-        specialInstructions: null,
-        userId: null // Guest order
+        fileKeys: amplifyFilesData.map((file: any) => file.key || ''),
+        specialInstructions: null
       };
 
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
+      const result = await client.graphql({
+        query: createGuestOrder,
+        variables: { input: orderInput }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create order');
-      }
-
-      const result = await response.json();
+      const order = result.data.createGuestOrder;
       
-      if (result.success) {
+      if (order) {
         // Save order locally for tracking purposes
         const localOrderData = {
-          orderId: result.order.id,
+          orderId: order.id,
           customerName: name,
           files: cartItems.map(item => item.id || ''),
           status: "Processing",
@@ -113,6 +116,7 @@ const Checkout = () => {
         navigate("/order-confirmation", { state: localOrderData });
         localStorage.setItem('printCart', JSON.stringify([]));
         localStorage.removeItem('printSettings');
+        localStorage.removeItem('amplifyFiles');
         window.dispatchEvent(new Event('cartUpdated'));
       } else {
         throw new Error('Failed to create order');

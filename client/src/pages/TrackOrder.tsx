@@ -39,24 +39,78 @@ const TrackOrder = () => {
     }
   }, []);
 
-  const handleTrackOrder = (e: React.FormEvent) => {
+  const handleTrackOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const foundOrder = storedOrders.find((order: any) => order.orderId === trackingId);
-    
-    if (foundOrder) {
-      setTrackedOrder({
-        id: foundOrder.orderId,
-        date: foundOrder.dateCreated.split('T')[0],
-        status: foundOrder.status.toLowerCase(),
-        price: foundOrder.totalAmount,
-        items: foundOrder.files.length,
-        deliveryDate: new Date(foundOrder.dateCreated).toLocaleDateString(),
-      });
+    if (!trackingId.trim()) {
+      return;
     }
-    setIsLoading(false);
+
+    setIsLoading(true);
+    
+    try {
+      // Import Amplify API client
+      const { generateClient } = await import('aws-amplify/api');
+      const { getOrderByID } = await import('@/lib/graphql-queries');
+      
+      const client = generateClient();
+      
+      const result = await client.graphql({
+        query: getOrderByID,
+        variables: { id: trackingId.trim() }
+      });
+
+      const orderData = result.data.getOrderByID;
+      
+      if (orderData) {
+        const formattedOrder: Order = {
+          id: orderData.id,
+          date: new Date(orderData.createdAt).toLocaleDateString(),
+          status: orderData.status.toLowerCase() as OrderStatus,
+          price: orderData.totalAmount,
+          items: orderData.totalPages,
+          deliveryDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString() // Estimated 2 days from now
+        };
+        
+        setTrackedOrder(formattedOrder);
+      } else {
+        // Check localStorage as fallback
+        const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const foundOrder = storedOrders.find((order: any) => order.orderId === trackingId);
+        
+        if (foundOrder) {
+          setTrackedOrder({
+            id: foundOrder.orderId,
+            date: foundOrder.dateCreated.split('T')[0],
+            status: foundOrder.status.toLowerCase(),
+            price: foundOrder.totalAmount,
+            items: foundOrder.files.length,
+            deliveryDate: new Date(foundOrder.dateCreated).toLocaleDateString(),
+          });
+        } else {
+          setTrackedOrder(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error tracking order:', error);
+      // Fallback to localStorage
+      const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      const foundOrder = storedOrders.find((order: any) => order.orderId === trackingId);
+      
+      if (foundOrder) {
+        setTrackedOrder({
+          id: foundOrder.orderId,
+          date: foundOrder.dateCreated.split('T')[0],
+          status: foundOrder.status.toLowerCase(),
+          price: foundOrder.totalAmount,
+          items: foundOrder.files.length,
+          deliveryDate: new Date(foundOrder.dateCreated).toLocaleDateString(),
+        });
+      } else {
+        setTrackedOrder(null);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getStatusColor = (status: OrderStatus) => {

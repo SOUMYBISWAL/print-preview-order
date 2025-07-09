@@ -6,7 +6,7 @@ import { Upload as UploadIcon, FileText, FileImage } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-// Removed AWS Amplify imports for guest uploads
+import AmplifyFileUploader from "@/components/AmplifyFileUploader";
 
 interface FileWithPages extends File {
   pageCount?: number;
@@ -19,7 +19,7 @@ const Upload = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isCountingPages, setIsCountingPages] = useState(false);
   const [totalPageCount, setTotalPageCount] = useState(0);
-  // Removed amplify files state for guest uploads
+  const [amplifyFiles, setAmplifyFiles] = useState<Array<{ key: string; name: string; size: number; type: string }>>([]);
 
   const countPagesInFile = async (file: FileWithPages): Promise<number> => {
     return new Promise((resolve) => {
@@ -133,8 +133,20 @@ const Upload = () => {
     toast.info("File removed");
   };
 
+  const handleAmplifyFilesUploaded = (uploadedFiles: Array<{ key: string; name: string; size: number; type: string }>) => {
+    setAmplifyFiles(uploadedFiles);
+    // Estimate page count for AWS files
+    const estimatedPages = uploadedFiles.reduce((total, file) => {
+      if (file.type.includes('pdf')) return total + 5; // Estimate 5 pages per PDF
+      if (file.type.includes('image')) return total + 1; // 1 page per image
+      return total + 3; // 3 pages for other documents
+    }, 0);
+    setTotalPageCount(prev => prev + estimatedPages);
+  };
+
   const handleContinue = () => {
-    if (files.length === 0) {
+    const totalFiles = files.length + amplifyFiles.length;
+    if (totalFiles === 0) {
       toast.error("Please upload at least one file");
       return;
     }
@@ -143,9 +155,10 @@ const Upload = () => {
     toast.success("Files ready for printing");
     navigate("/print-settings", { 
       state: { 
-        fileCount: files.length, 
+        fileCount: totalFiles, 
         totalPages: totalPageCount,
-        files: files
+        files: files,
+        amplifyFiles: amplifyFiles
       }
     });
   };
@@ -170,36 +183,51 @@ const Upload = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Upload Your Files</h1>
           
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div
-                className={`border-2 border-dashed rounded-lg p-8 text-center ${
-                  isDragging ? "border-green-500 bg-green-50" : "border-gray-300"
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  multiple
-                  className="hidden"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp"
+          <div className="space-y-6">
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-medium mb-4">Upload with AWS Amplify Storage</h3>
+                <AmplifyFileUploader 
+                  onFilesUploaded={handleAmplifyFilesUploaded}
+                  maxFileCount={10}
                 />
-                
-                <UploadIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Drag and drop your files here</h3>
-                <p className="text-gray-500 mb-4">
-                  Support for PDF, Word, JPG, PNG and other image formats
-                </p>
-                <Button onClick={handleTriggerFileInput}>
-                  Browse Files
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <div className="border-t pt-6">
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-medium mb-4">Or use traditional upload:</h3>
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-8 text-center ${
+                      isDragging ? "border-green-500 bg-green-50" : "border-gray-300"
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      multiple
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp"
+                    />
+                    
+                    <UploadIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Drag and drop your files here</h3>
+                    <p className="text-gray-500 mb-4">
+                      Support for PDF, Word, JPG, PNG and other image formats
+                    </p>
+                    <Button onClick={handleTriggerFileInput}>
+                      Browse Files
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
           
           {isCountingPages && (
             <div className="text-center py-4">

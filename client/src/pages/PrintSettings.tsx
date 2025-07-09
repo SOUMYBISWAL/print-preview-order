@@ -35,7 +35,7 @@ interface RelatedProduct {
 const PrintSettings: React.FC<PrintSettingsProps> = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { fileCount = 1, totalPages = 5 } = location.state || {};
+  const { fileCount = 1, totalPages = 5, files = [], amplifyFiles = [] } = location.state || {};
 
   const [paperType, setPaperType] = useState("standard");
   const [printType, setPrintType] = useState("bw");
@@ -295,6 +295,11 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
       copies: copies
     };
     localStorage.setItem('printSettings', JSON.stringify(printSettings));
+    
+    // Save amplify files for checkout if they exist
+    if (amplifyFiles && amplifyFiles.length > 0) {
+      localStorage.setItem('amplifyFiles', JSON.stringify(amplifyFiles));
+    }
     
     // Store cart items
     const cartItems = JSON.parse(localStorage.getItem('printCart') || '[]');
