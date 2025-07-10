@@ -61,28 +61,20 @@ const Admin = () => {
 
   const fetchOrders = async () => {
     try {
-      // Import Amplify API client
-      const { generateClient } = await import('aws-amplify/api');
-      const { listOrders } = await import('@/lib/graphql-queries');
+      const response = await fetch('/api/orders');
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+      }
       
-      const client = generateClient();
-      
-      const result = await client.graphql({
-        query: listOrders,
-        variables: {
-          limit: 100 // Fetch up to 100 orders
-        }
-      });
-
-      const ordersData = result.data.listOrders.items;
+      const ordersData = await response.json();
       const formattedOrders = ordersData.map((order: any) => ({
-        id: order.id,
+        id: order.id.toString(),
         customerName: order.customerName,
         email: order.email,
         phone: order.phone,
         files: order.fileNames || [],
         status: order.status.toLowerCase(),
-        totalAmount: order.totalAmount,
+        totalAmount: parseFloat(order.totalAmount),
         pages: order.totalPages,
         dateCreated: new Date(order.createdAt).toLocaleDateString(),
         printType: order.printType.replace('_', ' ').toLowerCase(),
@@ -95,8 +87,8 @@ const Admin = () => {
       setOrders(formattedOrders);
       calculateStats(formattedOrders);
     } catch (error) {
-      console.error('Error fetching orders from Amplify:', error);
-      // Fallback to sample data if Amplify API fails
+      console.error('Error fetching orders from backend:', error);
+      // Fallback to sample data if backend API fails
       loadSampleOrders();
     }
   };
@@ -167,12 +159,30 @@ const Admin = () => {
     calculateStats(sampleOrders);
   };
 
-  const updateOrderStatus = (orderId: string, newStatus: string) => {
-    const updatedOrders = orders.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    );
-    setOrders(updatedOrders);
-    localStorage.setItem('orders', JSON.stringify(updatedOrders));
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update order status');
+      }
+
+      // Update local state
+      const updatedOrders = orders.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      );
+      setOrders(updatedOrders);
+      calculateStats(updatedOrders);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('Failed to update order status. Please try again.');
+    }
   };
 
   const filteredOrders = orders.filter(order => {

@@ -120,6 +120,11 @@ The application uses a simple user management system:
 ```
 Changelog:
 - June 27, 2025. Initial setup
+- July 9, 2025. Migrated from Replit Agent to Replit environment
+  - Fixed database connection using PostgreSQL
+  - Updated file upload system to work with backend API
+  - Integrated admin panel with backend order management
+  - Ensured proper client/server separation for security
 ```
 
 ## User Preferences
