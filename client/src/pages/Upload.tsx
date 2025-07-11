@@ -255,7 +255,7 @@ const Upload = () => {
           )}
           
           <div className="flex justify-between">
-            <Button variant="outline" onClick={() => navigate("/")}>
+            <Button variant="outline" onClick={() => setLocation("/")}>
               Cancel
             </Button>
             <Button onClick={handleContinue} disabled={files.length === 0 || isCountingPages}>

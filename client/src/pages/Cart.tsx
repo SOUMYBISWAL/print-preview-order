@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import {
   Card,
   CardContent,
@@ -27,7 +27,7 @@ interface CartItem {
 }
 
 const Cart = () => {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
   
@@ -85,7 +85,7 @@ const Cart = () => {
     
     // For now, just checkout with the first item
     // In a real app, you would handle multiple items
-    navigate("/checkout", { state: cartItems[0] });
+    setLocation("/checkout");
   };
   
   const getPaperTypeName = (type: string) => {
@@ -118,7 +118,7 @@ const Cart = () => {
                 <p className="text-gray-500 mb-6">
                   Looks like you haven't added any print job to your cart yet.
                 </p>
-                <Button onClick={() => navigate("/upload")}>
+                <Button onClick={() => setLocation("/upload")}>
                   Upload Files to Print
                 </Button>
               </CardContent>

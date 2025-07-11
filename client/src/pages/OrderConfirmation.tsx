@@ -1,6 +1,6 @@
 
-import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,20 +15,31 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const OrderConfirmation = () => {
-  const location = useLocation();
-  const orderDetails = location.state || {
+  const [orderDetails, setOrderDetails] = useState({
     orderId: "Unknown",
     orderItems: [],
     subtotal: 0,
     deliveryFee: 0,
     total: 0,
-    name: "",
+    customerName: "",
     address: "",
     city: "",
     state: "",
     pincode: "",
-    phone: ""
-  };
+    phone: "",
+    totalAmount: 0
+  });
+
+  useEffect(() => {
+    // Get order data from localStorage
+    const storedOrderData = localStorage.getItem('orderData');
+    if (storedOrderData) {
+      const orderData = JSON.parse(storedOrderData);
+      setOrderDetails(orderData);
+      // Clean up localStorage after retrieving the data
+      localStorage.removeItem('orderData');
+    }
+  }, []);
 
   const estimatedDelivery = () => {
     const today = new Date();
@@ -143,7 +154,7 @@ const OrderConfirmation = () => {
                 <div>
                   <h3 className="font-medium">Delivery Address</h3>
                   <address className="not-italic text-gray-600 mt-1">
-                    {orderDetails.name}<br />
+                    {orderDetails.customerName}<br />
                     CUTM Bhubaneswar<br />
                     Bhubaneswar, Odisha
                   </address>

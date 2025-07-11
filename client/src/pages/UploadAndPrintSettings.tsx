@@ -75,7 +75,7 @@ const UploadAndPrintSettings = () => {
     };
     
     localStorage.setItem('currentOrder', JSON.stringify(orderData));
-    navigate('/checkout');
+    setLocation('/checkout');
   };
 
   return (

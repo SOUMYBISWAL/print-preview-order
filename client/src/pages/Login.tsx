@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Login = () => {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("login");
   
   // Login form state
@@ -54,7 +54,7 @@ const Login = () => {
           description: "Welcome back to PrintLite!",
         });
         
-        navigate("/");
+        setLocation("/");
       } else {
         toast({
           title: "Login failed",
@@ -110,7 +110,7 @@ const Login = () => {
         description: "Welcome to PrintLite!",
       });
       
-      navigate("/");
+      setLocation("/");
       setRegistering(false);
     }, 1000);
   };

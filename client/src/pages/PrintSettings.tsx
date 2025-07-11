@@ -337,7 +337,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     });
     
     // Navigate to home page with a category query parameter
-    navigate("/?category=stationery");
+    setLocation("/?category=stationery");
   };
 
   const renderStars = (rating: number) => {
@@ -612,7 +612,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
           </div>
           
           <div className="flex justify-between mt-6">
-            <Button variant="outline" onClick={() => navigate("/upload")}>
+            <Button variant="outline" onClick={() => setLocation("/upload")}>
               Back
             </Button>
           </div>

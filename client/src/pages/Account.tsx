@@ -186,7 +186,7 @@ const Account = () => {
   }
   
   if (!user) {
-    navigate("/login");
+    setLocation("/login");
     return null;
   }
   
@@ -288,7 +288,7 @@ const Account = () => {
                     <Button 
                       variant="outline" 
                       className="mt-4"
-                      onClick={() => navigate("/track-order")}
+                      onClick={() => setLocation("/track-order")}
                     >
                       <Truck className="mr-2 h-4 w-4" />
                       Track an Order
