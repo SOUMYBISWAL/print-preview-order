@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, FileText, Printer, Check, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
 
 interface UploadedFile {
@@ -20,7 +20,7 @@ interface UploadedFile {
 }
 
 const UploadAndPrintSettings = () => {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [printSettings, setPrintSettings] = useState({
     colorType: 'black-white',

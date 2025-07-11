@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import {
   Card,
   CardContent,
@@ -33,9 +33,14 @@ interface RelatedProduct {
 }
 
 const PrintSettings: React.FC<PrintSettingsProps> = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { fileCount = 1, totalPages = 5, files = [], amplifyFiles = [] } = location.state || {};
+  const [, setLocation] = useLocation();
+  
+  // Get file data from localStorage
+  const storedFiles = localStorage.getItem('uploadedFiles');
+  const storedTotalPages = localStorage.getItem('totalPages');
+  const files = storedFiles ? JSON.parse(storedFiles) : [];
+  const totalPages = storedTotalPages ? parseInt(storedTotalPages) : 5;
+  const fileCount = files.length || 1;
 
   const [paperType, setPaperType] = useState("standard");
   const [printType, setPrintType] = useState("bw");
@@ -312,7 +317,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     });
     
     // Navigate to cart page after adding to cart
-    navigate("/cart");
+    setLocation("/cart");
   };
 
   const incrementCopies = () => {
