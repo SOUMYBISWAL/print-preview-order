@@ -1,6 +1,5 @@
 
 import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Upload, FileText, Printer, Check, X } from 'lucide-react';
 import { useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
+import LocalFileUploader from "@/components/LocalFileUploader";
 
 interface UploadedFile {
   file: File;
@@ -32,25 +32,12 @@ const UploadAndPrintSettings = () => {
     paperQuality: 'standard'
   });
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      pages: Math.floor(Math.random() * 20) + 1, // Mock page count
-      id: Math.random().toString(36).substr(2, 9)
-    }));
-    setUploadedFiles(prev => [...prev, ...newFiles]);
+  // Handle file uploads from LocalFileUploader
+  const handleFilesUploaded = useCallback((files: Array<{ key: string; name: string; size: number; type: string }>) => {
+    console.log('Files uploaded:', files);
+    // Note: Since this is a local uploader, files are already processed
+    // The LocalFileUploader handles the actual upload simulation
   }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-      'application/msword': ['.doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'text/plain': ['.txt']
-    }
-  });
 
   const removeFile = (id: string) => {
     setUploadedFiles(prev => prev.filter(file => file.id !== id));
@@ -93,54 +80,20 @@ const UploadAndPrintSettings = () => {
             </TabsList>
 
             <TabsContent value="upload" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upload Your Documents</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div
-                    {...getRootProps()}
-                    className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                      isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary'
-                    }`}
-                  >
-                    <input {...getInputProps()} />
-                    <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    {isDragActive ? (
-                      <p className="text-lg">Drop the files here...</p>
-                    ) : (
-                      <>
-                        <p className="text-lg mb-2">Drag & drop files here, or click to select</p>
-                        <p className="text-sm text-gray-500">Supports PDF, DOC, DOCX, TXT files</p>
-                      </>
-                    )}
-                  </div>
-
-                  {uploadedFiles.length > 0 && (
-                    <div className="mt-6 space-y-3">
-                      <h3 className="font-semibold">Uploaded Files:</h3>
-                      {uploadedFiles.map((file) => (
-                        <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <FileText className="h-5 w-5 text-blue-500" />
-                            <div>
-                              <p className="font-medium">{file.file.name}</p>
-                              <p className="text-sm text-gray-500">{file.pages} pages</p>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeFile(file.id)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <LocalFileUploader 
+                onFilesUploaded={(files) => {
+                  console.log('Files uploaded:', files);
+                  // Convert to the format expected by this component
+                  const newFiles = files.map(file => ({
+                    file: new File([], file.name, { type: file.type }),
+                    preview: '',
+                    pages: Math.floor(Math.random() * 20) + 1, // Mock page count for now
+                    id: file.key
+                  }));
+                  setUploadedFiles(prev => [...prev, ...newFiles]);
+                }}
+                maxFileCount={10}
+              />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-6">

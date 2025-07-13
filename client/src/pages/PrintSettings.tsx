@@ -302,6 +302,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = () => {
     localStorage.setItem('printSettings', JSON.stringify(printSettings));
     
     // Save amplify files for checkout if they exist
+    const amplifyFiles = JSON.parse(localStorage.getItem('amplifyFiles') || '[]');
     if (amplifyFiles && amplifyFiles.length > 0) {
       localStorage.setItem('amplifyFiles', JSON.stringify(amplifyFiles));
     }
