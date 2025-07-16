@@ -22,16 +22,19 @@ import { eq } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
+    if (!db) throw new Error("Database not initialized");
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database not initialized");
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    if (!db) throw new Error("Database not initialized");
     const [user] = await db
       .insert(users)
       .values(insertUser)
@@ -41,6 +44,7 @@ export class DatabaseStorage implements IStorage {
 
   // Order management methods
   async createOrder(order: InsertOrder): Promise<Order> {
+    if (!db) throw new Error("Database not initialized");
     const [newOrder] = await db
       .insert(orders)
       .values({
@@ -52,19 +56,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOrder(id: number): Promise<Order | undefined> {
+    if (!db) throw new Error("Database not initialized");
     const [order] = await db.select().from(orders).where(eq(orders.id, id));
     return order || undefined;
   }
 
   async getAllOrders(): Promise<Order[]> {
+    if (!db) throw new Error("Database not initialized");
     return await db.select().from(orders).orderBy(orders.createdAt);
   }
 
   async getUserOrders(userId: number): Promise<Order[]> {
+    if (!db) throw new Error("Database not initialized");
     return await db.select().from(orders).where(eq(orders.userId, userId)).orderBy(orders.createdAt);
   }
 
   async updateOrder(id: number, updates: UpdateOrder): Promise<Order | undefined> {
+    if (!db) throw new Error("Database not initialized");
     const [updatedOrder] = await db
       .update(orders)
       .set({
@@ -77,6 +85,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteOrder(id: number): Promise<boolean> {
+    if (!db) throw new Error("Database not initialized");
     const result = await db.delete(orders).where(eq(orders.id, id));
     return result.rowCount > 0;
   }
