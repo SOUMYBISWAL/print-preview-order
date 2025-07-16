@@ -130,6 +130,12 @@ Changelog:
   - Fixed dependency issues and environment configuration
   - Application successfully running on port 5000
   - Ready for continued development
+- July 16, 2025. Added AWS Amplify deployment configuration
+  - Created amplify.yml for proper build configuration
+  - Added _redirects file for SPA routing support
+  - Fixed 404 errors on client-side routes
+  - Added comprehensive deployment documentation
+  - Made database connection optional for development
 ```
 
 ## User Preferences
