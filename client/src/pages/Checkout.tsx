@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { apiRequest } from "@/lib/queryClient";
 
 interface PrintSummary {
   id?: string;
@@ -90,25 +91,12 @@ const Checkout = () => {
 
       console.log('Sending order data:', orderData);
 
-      const response = await fetch('/api/orders', {
+      // Use apiRequest from queryClient for better error handling
+      const result = await apiRequest('/api/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(orderData)
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-      console.log('Response content-type:', response.headers.get('content-type'));
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Error response:', errorData);
-        throw new Error(`Server error: ${response.status} - ${errorData}`);
-      }
-
-      const result = await response.json();
       console.log('Order response:', result);
       
       if (result.success && result.order) {
