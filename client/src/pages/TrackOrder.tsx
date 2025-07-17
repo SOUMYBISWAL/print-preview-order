@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Package, Check, Truck, Calendar } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 // Define the order status type
 type OrderStatus = "processing" | "printed" | "shipped" | "delivered";

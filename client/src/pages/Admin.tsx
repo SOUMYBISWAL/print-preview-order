@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Printer, Check, Clock, Package } from 'lucide-react';
 import Navbar from "@/components/Navbar";
+import { apiRequest } from "@/lib/queryClient";
 
 interface Order {
   id: string;
@@ -68,19 +69,14 @@ const Admin = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/orders');
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-      
-      const ordersData = await response.json();
+      const ordersData = await apiRequest('/api/orders');
       const formattedOrders = ordersData.map((order: any) => ({
         id: order.id.toString(),
         customerName: order.customerName,
         email: order.email,
         phone: order.phone,
         files: order.fileNames || [],
-        status: order.status.toLowerCase(),
+        status: order.status?.toLowerCase() || 'pending',
         totalAmount: parseFloat(order.totalAmount),
         pages: order.totalPages,
         dateCreated: new Date(order.createdAt).toLocaleDateString(),
@@ -94,8 +90,8 @@ const Admin = () => {
       setOrders(formattedOrders);
       calculateStats(formattedOrders);
     } catch (error) {
-      console.error('Error fetching orders from backend:', error);
-      // Fallback to sample data if backend API fails
+      console.error('Error fetching orders:', error);
+      // Fallback to sample data if API fails
       loadSampleOrders();
     }
   };

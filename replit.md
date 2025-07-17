@@ -136,6 +136,13 @@ Changelog:
   - Fixed 404 errors on client-side routes
   - Added comprehensive deployment documentation
   - Made database connection optional for development
+- July 17, 2025. Fixed hybrid deployment compatibility
+  - Resolved 404 API errors when deployed on AWS Amplify
+  - Implemented dual-environment support (Replit + Amplify)
+  - Created apiRequest handler for both backend and frontend-only deployments
+  - Added localStorage fallback for order management on static deployments
+  - Fixed order placement flow to work in both environments
+  - Updated Admin and TrackOrder pages for deployment flexibility
 ```
 
 ## User Preferences
