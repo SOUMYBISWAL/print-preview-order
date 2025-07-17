@@ -6,6 +6,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Add a middleware to handle API routes specifically before Vite middleware
+app.use('/api/*', (req, res, next) => {
+  // Add headers to prevent caching and ensure JSON responses
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+    'Content-Type': 'application/json',
+    'X-API-Route': 'true'
+  });
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
