@@ -45,6 +45,7 @@ const Checkout = () => {
 
   const [paymentStep, setPaymentStep] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubmit = () => {
     if (!name || !mobile) {
@@ -55,6 +56,10 @@ const Checkout = () => {
   };
 
   const handlePayment = async () => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
+    
     try {
       // Get cart details and other data from localStorage
       const printSettings = JSON.parse(localStorage.getItem('printSettings') || '{}');
@@ -76,12 +81,14 @@ const Checkout = () => {
         copies: printSettings.copies || 1,
         deliveryAddress: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other Location",
         paymentMethod: paymentMethod,
-        paymentStatus: 'completed',
+        paymentStatus: paymentMethod === 'cash_on_delivery' ? 'pending' : 'completed',
         fileNames: amplifyFilesData.length > 0 ? 
           amplifyFilesData.map((file: any) => file.name || 'uploaded_file') :
           cartItems.map(item => item.id || 'uploaded_file'),
         specialInstructions: null
       };
+
+      console.log('Sending order data:', orderData);
 
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -92,16 +99,17 @@ const Checkout = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create order');
+        const errorData = await response.text();
+        throw new Error(`Server error: ${response.status} - ${errorData}`);
       }
 
       const result = await response.json();
-      const order = result.order;
+      console.log('Order response:', result);
       
-      if (order) {
+      if (result.success && result.order) {
         // Save order locally for tracking purposes
         const localOrderData = {
-          orderId: order.id,
+          orderId: result.order.id,
           customerName: name,
           files: orderData.fileNames,
           status: "Processing",
@@ -116,17 +124,21 @@ const Checkout = () => {
 
         // Clear cart and navigate to confirmation
         localStorage.setItem('orderData', JSON.stringify(localOrderData));
-        navigate("/order-confirmation");
         localStorage.setItem('printCart', JSON.stringify([]));
         localStorage.removeItem('printSettings');
         localStorage.removeItem('amplifyFiles');
         window.dispatchEvent(new Event('cartUpdated'));
+        
+        // Navigate to confirmation page
+        navigate("/order-confirmation");
       } else {
-        throw new Error('Failed to create order');
+        throw new Error('Invalid response from server');
       }
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to place order. Please try again.');
+      alert(`Failed to place order: ${error.message}. Please try again.`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -248,9 +260,19 @@ const Checkout = () => {
                         />
                         <Label htmlFor="netbanking">Net Banking</Label>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id="cash_on_delivery"
+                          value="cash_on_delivery"
+                          checked={paymentMethod === "cash_on_delivery"}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <Label htmlFor="cash_on_delivery">Cash on Delivery</Label>
+                      </div>
                     </div>
-                    <Button className="w-full mt-4" size="lg" onClick={handlePayment}>
-                      Pay ₹{(totalPrice + deliveryFee).toFixed(2)}
+                    <Button className="w-full mt-4" size="lg" onClick={handlePayment} disabled={isProcessing}>
+                      {isProcessing ? "Processing..." : paymentMethod === "cash_on_delivery" ? `Place Order - ₹${(totalPrice + deliveryFee).toFixed(2)}` : `Pay ₹${(totalPrice + deliveryFee).toFixed(2)}`}
                     </Button>
                   </div>
                 )}
