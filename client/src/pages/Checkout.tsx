@@ -98,8 +98,13 @@ const Checkout = () => {
         body: JSON.stringify(orderData)
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Response content-type:', response.headers.get('content-type'));
+
       if (!response.ok) {
         const errorData = await response.text();
+        console.error('Error response:', errorData);
         throw new Error(`Server error: ${response.status} - ${errorData}`);
       }
 
