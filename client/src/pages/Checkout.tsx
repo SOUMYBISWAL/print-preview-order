@@ -43,16 +43,16 @@ const Checkout = () => {
     setDeliveryFee(subtotal >= 99 ? 0 : 20);
   }, []);
 
-  const [paymentStep, setPaymentStep] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isProcessing, setIsProcessing] = useState(false);
+  const paymentMethod = "cash_on_delivery"; // Fixed to cash on delivery only
 
   const handleSubmit = () => {
     if (!name || !mobile) {
       alert("Please fill in name and mobile number");
       return;
     }
-    setPaymentStep(true);
+    // Directly proceed to place order with cash on delivery
+    handlePayment();
   };
 
   const handlePayment = async () => {
@@ -227,60 +227,22 @@ const Checkout = () => {
                     Free delivery applied!
                   </div>
                 )}
-                {!paymentStep ? (
-                  <Button className="w-full mt-4" size="lg" onClick={handleSubmit}>
-                    Continue to Payment
-                  </Button>
-                ) : (
-                  <div className="space-y-4">
-                    <h3 className="font-medium">Select Payment Method</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id="upi"
-                          value="upi"
-                          checked={paymentMethod === "upi"}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <Label htmlFor="upi">UPI Payment</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id="card"
-                          value="card"
-                          checked={paymentMethod === "card"}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <Label htmlFor="card">Credit/Debit Card</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id="netbanking"
-                          value="netbanking"
-                          checked={paymentMethod === "netbanking"}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <Label htmlFor="netbanking">Net Banking</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id="cash_on_delivery"
-                          value="cash_on_delivery"
-                          checked={paymentMethod === "cash_on_delivery"}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <Label htmlFor="cash_on_delivery">Cash on Delivery</Label>
-                      </div>
-                    </div>
-                    <Button className="w-full mt-4" size="lg" onClick={handlePayment} disabled={isProcessing}>
-                      {isProcessing ? "Processing..." : paymentMethod === "cash_on_delivery" ? `Place Order - ₹${(totalPrice + deliveryFee).toFixed(2)}` : `Pay ₹${(totalPrice + deliveryFee).toFixed(2)}`}
-                    </Button>
+                
+                {/* Cash on Delivery Information */}
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="font-medium text-blue-900 mb-2">Payment Method</h3>
+                  <div className="flex items-center space-x-2 text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Cash on Delivery</span>
                   </div>
-                )}
+                  <p className="text-sm text-blue-600 mt-1">Pay ₹{(totalPrice + deliveryFee).toFixed(2)} when your order is delivered</p>
+                </div>
+
+                <Button className="w-full mt-4" size="lg" onClick={handleSubmit} disabled={isProcessing}>
+                  {isProcessing ? "Processing..." : `Place Order - ₹${(totalPrice + deliveryFee).toFixed(2)}`}
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -71,7 +71,7 @@ const OrderConfirmation = () => {
             </div>
             <h1 className="text-3xl font-bold">Order Placed Successfully!</h1>
             <p className="text-gray-600 mt-2">
-              Thank you for your order. We'll send you a confirmation once your order ships.
+              Thank you for your order. You will pay ₹{(Number(orderDetails.subtotal) + Number(orderDetails.deliveryFee)).toFixed(2)} when your order is delivered.
             </p>
           </div>
           
@@ -90,7 +90,7 @@ const OrderConfirmation = () => {
               
               <div className="flex justify-between">
                 <span className="text-gray-600">Payment Method</span>
-                <span className="font-medium">Online Payment</span>
+                <span className="font-medium">Cash on Delivery</span>
               </div>
               
               <div className="flex justify-between">
