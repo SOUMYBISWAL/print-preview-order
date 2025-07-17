@@ -40,6 +40,10 @@ const Admin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginMobile, setLoginMobile] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loggingIn, setLoggingIn] = useState(false);
   const [stats, setStats] = useState<Stats>({
     totalOrders: 0,
     pendingOrders: 0,
@@ -49,15 +53,17 @@ const Admin = () => {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!user.isAdmin) {
-      setLocation('/login');
+    if (user.isAdmin) {
+      setIsAuthenticated(true);
     }
   }, []);
 
   useEffect(() => {
-    // Fetch orders from API
-    fetchOrders();
-  }, []);
+    // Only fetch orders if authenticated
+    if (isAuthenticated) {
+      fetchOrders();
+    }
+  }, [isAuthenticated]);
 
   const fetchOrders = async () => {
     try {
@@ -157,6 +163,29 @@ const Admin = () => {
 
     setOrders(sampleOrders);
     calculateStats(sampleOrders);
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoggingIn(true);
+    
+    setTimeout(() => {
+      // Admin credentials check
+      if (loginMobile === "9999999999" && loginPassword === "admin123") {
+        const user = {
+          mobile: loginMobile,
+          name: "Admin",
+          isLoggedIn: true,
+          isAdmin: true
+        };
+        localStorage.setItem('user', JSON.stringify(user));
+        setIsAuthenticated(true);
+        window.dispatchEvent(new Event('userStateChanged'));
+      } else {
+        alert('Invalid admin credentials');
+      }
+      setLoggingIn(false);
+    }, 1000);
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
