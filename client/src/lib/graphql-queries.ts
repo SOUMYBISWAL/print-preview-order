@@ -2,9 +2,38 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createOrder = /* GraphQL */ `
+  mutation CreateOrder($input: CreateOrderInput!) {
+    createOrder(input: $input) {
+      id
+      customerName
+      email
+      phone
+      totalAmount
+      status
+      totalPages
+      printType
+      paperSize
+      paperType
+      sides
+      binding
+      copies
+      deliveryAddress
+      paymentMethod
+      paymentStatus
+      fileNames
+      fileKeys
+      specialInstructions
+      userID
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export const createGuestOrder = /* GraphQL */ `
   mutation CreateGuestOrder($input: CreateOrderInput!) {
-    createGuestOrder(input: $input) {
+    createOrder(input: $input) {
       id
       customerName
       email
@@ -59,6 +88,113 @@ export const listOrders = /* GraphQL */ `
         fileKeys
         specialInstructions
         userID
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+export const getOrder = /* GraphQL */ `
+  query GetOrder($id: ID!) {
+    getOrder(id: $id) {
+      id
+      customerName
+      email
+      phone
+      totalAmount
+      status
+      totalPages
+      printType
+      paperSize
+      paperType
+      sides
+      binding
+      copies
+      deliveryAddress
+      paymentMethod
+      paymentStatus
+      fileNames
+      fileKeys
+      specialInstructions
+      userID
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const updateOrder = /* GraphQL */ `
+  mutation UpdateOrder($input: UpdateOrderInput!) {
+    updateOrder(input: $input) {
+      id
+      customerName
+      email
+      phone
+      totalAmount
+      status
+      totalPages
+      printType
+      paperSize
+      paperType
+      sides
+      binding
+      copies
+      deliveryAddress
+      paymentMethod
+      paymentStatus
+      fileNames
+      fileKeys
+      specialInstructions
+      userID
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const createPrintSettings = /* GraphQL */ `
+  mutation CreatePrintSettings($input: CreatePrintSettingsInput!) {
+    createPrintSettings(input: $input) {
+      id
+      userId
+      sessionId
+      totalPages
+      printType
+      paperType
+      sides
+      binding
+      copies
+      files
+      pricePerPage
+      totalPrice
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const listPrintSettings = /* GraphQL */ `
+  query ListPrintSettings(
+    $filter: ModelPrintSettingsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listPrintSettings(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        userId
+        sessionId
+        totalPages
+        printType
+        paperType
+        sides
+        binding
+        copies
+        files
+        pricePerPage
+        totalPrice
         createdAt
         updatedAt
       }

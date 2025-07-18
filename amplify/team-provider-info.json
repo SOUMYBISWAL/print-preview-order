@@ -1,0 +1,30 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-printlite-dev-authRole",
+      "UnauthRoleName": "amplify-printlite-dev-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::ACCOUNT:role/amplify-printlite-dev-authRole",
+      "UnauthRoleArn": "arn:aws:iam::ACCOUNT:role/amplify-printlite-dev-unauthRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-printlite-dev-deployment",
+      "StackName": "amplify-printlite-dev",
+      "StackId": "arn:aws:cloudformation:us-east-1:ACCOUNT:stack/amplify-printlite-dev/uuid",
+      "AmplifyAppId": "APP_ID"
+    },
+    "categories": {
+      "api": {
+        "printliteapi": {
+          "GraphQLAPIIdOutput": "API_ID",
+          "GraphQLAPIEndpointOutput": "https://API_ID.appsync.us-east-1.amazonaws.com/graphql",
+          "GraphQLAPIKeyOutput": "API_KEY"
+        }
+      },
+      "storage": {
+        "printlitestorage": {
+          "BucketName": "printlitestorage-dev",
+          "Region": "us-east-1"
+        }
+      }
+    }
+  }
+}
