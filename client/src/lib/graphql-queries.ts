@@ -203,35 +203,6 @@ export const listPrintSettings = /* GraphQL */ `
   }
 `;
 
-export const getOrder = /* GraphQL */ `
-  query GetOrder($id: ID!) {
-    getOrder(id: $id) {
-      id
-      customerName
-      email
-      phone
-      totalAmount
-      status
-      totalPages
-      printType
-      paperSize
-      paperType
-      sides
-      binding
-      copies
-      deliveryAddress
-      paymentMethod
-      paymentStatus
-      fileNames
-      fileKeys
-      specialInstructions
-      userID
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
 export const updateOrderStatus = /* GraphQL */ `
   mutation UpdateOrderStatus($id: ID!, $status: OrderStatus!) {
     updateOrderStatus(id: $id, status: $status) {
