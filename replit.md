@@ -146,6 +146,12 @@ Changelog:
   - Created GraphQL schema for AWS AppSync and DynamoDB
   - Added AWS Amplify backend configuration for automatic provisioning
   - Configured S3 storage for file uploads in AWS environment
+- July 18, 2025. Fixed deployment issues and simplified build process
+  - Removed problematic AWS backend deployment commands from amplify.yml
+  - Fixed duplicate export errors in graphql-queries.ts that were causing build failures
+  - Simplified amplify.yml to work without AWS backend configuration
+  - Build process now works correctly for both Replit and Amplify deployments
+  - Application ready for deployment with proper fallback to local storage
 ```
 
 ## User Preferences
