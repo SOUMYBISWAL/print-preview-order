@@ -60,7 +60,8 @@ async function handleAmplifyRequest(url: string, options: RequestInit = {}) {
         }
       });
       
-      return { success: true, order: result.data.createGuestOrder };
+      const data = result.data as any;
+      return { success: true, order: data?.createGuestOrder };
     }
     
     if (url === '/api/orders' && method === 'GET') {
@@ -71,7 +72,8 @@ async function handleAmplifyRequest(url: string, options: RequestInit = {}) {
         query: listOrders
       });
       
-      return result.data.listOrders.items;
+      const data = result.data as any;
+      return data?.listOrders?.items || [];
     }
     
     if (url.startsWith('/api/orders/') && method === 'GET') {
@@ -84,11 +86,12 @@ async function handleAmplifyRequest(url: string, options: RequestInit = {}) {
         variables: { id: orderId }
       });
       
-      if (!result.data.getOrder) {
+      const data = result.data as any;
+      if (!data?.getOrder) {
         throw new Error('Order not found');
       }
       
-      return result.data.getOrder;
+      return data.getOrder;
     }
     
     // For other requests, throw appropriate errors
