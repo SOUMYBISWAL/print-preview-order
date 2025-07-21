@@ -6,6 +6,9 @@ import { Upload as UploadIcon, FileText, FileImage } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AmplifyFileUploader from "@/components/AmplifyFileUploader";
+import LocalFileUploader from "@/components/LocalFileUploader";
+import { hasAWSCredentials } from "@/lib/amplify";
 
 
 interface FileWithPages extends File {
@@ -19,6 +22,7 @@ const Upload = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isCountingPages, setIsCountingPages] = useState(false);
   const [totalPageCount, setTotalPageCount] = useState(0);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; name: string; size: number; type: string }>>([]);
 
 
   const countPagesInFile = async (file: FileWithPages): Promise<number> => {
@@ -135,22 +139,42 @@ const Upload = () => {
 
 
 
+  const handleFilesUploaded = (files: Array<{ key: string; name: string; size: number; type: string }>) => {
+    setUploadedFiles(files);
+    // Store the uploaded files for use in checkout
+    localStorage.setItem('amplifyFiles', JSON.stringify(files));
+    toast.success(`${files.length} file(s) uploaded to cloud storage successfully!`);
+  };
+
   const handleContinue = () => {
-    if (files.length === 0) {
+    if (files.length === 0 && uploadedFiles.length === 0) {
       toast.error("Please upload at least one file");
       return;
     }
 
     // Store file information in localStorage for the print settings page
-    const fileData = files.map(file => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      pages: file.pageCount || 1
-    }));
-    
-    localStorage.setItem('uploadedFiles', JSON.stringify(fileData));
-    localStorage.setItem('totalPages', totalPageCount.toString());
+    if (uploadedFiles.length > 0) {
+      // Use Amplify uploaded files
+      const fileData = uploadedFiles.map(file => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        key: file.key,
+        pages: 1 // Default page count for cloud files
+      }));
+      localStorage.setItem('uploadedFiles', JSON.stringify(fileData));
+      localStorage.setItem('totalPages', uploadedFiles.length.toString());
+    } else {
+      // Use local files
+      const fileData = files.map(file => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        pages: file.pageCount || 1
+      }));
+      localStorage.setItem('uploadedFiles', JSON.stringify(fileData));
+      localStorage.setItem('totalPages', totalPageCount.toString());
+    }
 
     // Navigate to print settings with actual page count
     toast.success("Files ready for printing");
@@ -177,36 +201,56 @@ const Upload = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Upload Your Files</h1>
           
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div
-                className={`border-2 border-dashed rounded-lg p-8 text-center ${
-                  isDragging ? "border-green-500 bg-green-50" : "border-gray-300"
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  multiple
-                  className="hidden"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp"
+          {/* Use Amplify File Uploader if AWS credentials are available, otherwise fallback to local */}
+          {hasAWSCredentials ? (
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-medium mb-4">Upload to Cloud Storage (S3)</h3>
+                <AmplifyFileUploader
+                  onFilesUploaded={handleFilesUploaded}
+                  maxFileCount={10}
+                  acceptedFileTypes={[
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'image/*',
+                    'text/plain'
+                  ]}
                 />
-                
-                <UploadIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Drag and drop your files here</h3>
-                <p className="text-gray-500 mb-4">
-                  Support for PDF, Word, JPG, PNG and other image formats
-                </p>
-                <Button onClick={handleTriggerFileInput}>
-                  Browse Files
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <div
+                  className={`border-2 border-dashed rounded-lg p-8 text-center ${
+                    isDragging ? "border-green-500 bg-green-50" : "border-gray-300"
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    multiple
+                    className="hidden"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp"
+                  />
+                  
+                  <UploadIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Drag and drop your files here</h3>
+                  <p className="text-gray-500 mb-4">
+                    Support for PDF, Word, JPG, PNG and other image formats
+                  </p>
+                  <Button onClick={handleTriggerFileInput}>
+                    Browse Files
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           
           {isCountingPages && (
             <div className="text-center py-4">
@@ -258,7 +302,7 @@ const Upload = () => {
             <Button variant="outline" onClick={() => setLocation("/")}>
               Cancel
             </Button>
-            <Button onClick={handleContinue} disabled={files.length === 0 || isCountingPages}>
+            <Button onClick={handleContinue} disabled={(files.length === 0 && uploadedFiles.length === 0) || isCountingPages}>
               Continue to Print Settings
             </Button>
           </div>

@@ -110,51 +110,51 @@ const Admin = () => {
     const sampleOrders: Order[] = [
       {
         id: 'ORD-001',
-        customerName: 'John Doe',
-        email: 'john@example.com',
-        phone: '+1 (555) 123-4567',
+        customerName: 'Arjun Kumar',
+        email: 'arjun@example.com',
+        phone: '+91 9876543210',
         files: ['Resume.pdf'],
-        status: 'Delivered',
-        totalAmount: 7.75,
+        status: 'delivered',
+        totalAmount: 125.50, // INR pricing
         pages: 3,
-        dateCreated: '2024-01-15',
-        printType: 'Color',
+        dateCreated: '2025-01-15',
+        printType: 'color',
         paperSize: 'A4',
         sides: 'single',
         binding: 'none',
-        deliveryAddress: '123 Main St, New York, NY 10001'
+        deliveryAddress: 'KIIT University, Bhubaneswar, Odisha'
       },
       {
         id: 'ORD-002',
-        customerName: 'Jane Smith',
-        email: 'jane@example.com',
-        phone: '+1 (555) 987-6543',
+        customerName: 'Priya Sharma',
+        email: 'priya@example.com',
+        phone: '+91 8765432109',
         files: ['Presentation.pdf', 'Handouts.pdf'],
-        status: 'Printing',
-        totalAmount: 11.25,
+        status: 'printing',
+        totalAmount: 350.75, // INR pricing
         pages: 25,
-        dateCreated: '2024-01-16',
-        printType: 'Color',
+        dateCreated: '2025-01-16',
+        printType: 'color',
         paperSize: 'A4',
         sides: 'double',
         binding: 'spiral',
-        deliveryAddress: '456 Oak Ave, Los Angeles, CA 90210'
+        deliveryAddress: 'CUTM Bhubaneswar, Odisha'
       },
       {
         id: 'ORD-003',
-        customerName: 'Bob Johnson',
-        email: 'bob@example.com',
-        phone: '+1 (555) 456-7890',
+        customerName: 'Rohit Patel',
+        email: 'rohit@example.com',
+        phone: '+91 7654321098',
         files: ['Document.pdf'],
-        status: 'Pending',
-        totalAmount: 7.00,
+        status: 'pending',
+        totalAmount: 95.00, // INR pricing
         pages: 8,
-        dateCreated: '2024-01-17',
-        printType: 'Black & White',
-        paperSize: 'Letter',
+        dateCreated: '2025-01-17',
+        printType: 'black_white',
+        paperSize: 'A4',
         sides: 'single',
         binding: 'none',
-        deliveryAddress: '789 Pine Rd, Chicago, IL 60601'
+        deliveryAddress: 'SOA University, Bhubaneswar, Odisha'
       }
     ];
 
@@ -368,7 +368,7 @@ const Admin = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-gray-600">Revenue</p>
-                        <p className="text-3xl font-bold">${stats.totalRevenue.toFixed(2)}</p>
+                        <p className="text-3xl font-bold">₹{stats.totalRevenue.toFixed(2)}</p>
                       </div>
                       <Check className="h-8 w-8 text-green-500" />
                     </div>
@@ -391,7 +391,7 @@ const Admin = () => {
                           </div>
                           <div>
                             <p className="font-semibold">{order.id} - {order.customerName}</p>
-                            <p className="text-sm text-gray-600">{order.pages} pages • ${order.totalAmount.toFixed(2)}</p>
+                            <p className="text-sm text-gray-600">{order.pages} pages • ₹{order.totalAmount.toFixed(2)}</p>
                           </div>
                         </div>
                         <Badge className={order.status === 'Delivered' ? 'bg-black text-white' : 'bg-gray-200 text-gray-800'}>
@@ -444,7 +444,7 @@ const Admin = () => {
                               </Badge>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-bold">${order.totalAmount.toFixed(2)}</p>
+                              <p className="text-lg font-bold">₹{order.totalAmount.toFixed(2)}</p>
                               <p className="text-sm text-gray-600">{order.pages} pages</p>
                             </div>
                           </div>

@@ -8,11 +8,9 @@ const { join } = require('path');
 let orders = [];
 let nextOrderId = 1;
 
-// Price conversion from USD to INR (approximate rate)
-const USD_TO_INR = 83.5;
-
-function convertToINR(usdPrice) {
-  return Math.round(usdPrice * USD_TO_INR);
+// All prices are already in Indian Rupees (INR)
+function formatINRPrice(inrPrice) {
+  return Math.round(parseFloat(inrPrice) * 100) / 100; // Round to 2 decimal places
 }
 
 const server = createServer((req, res) => {
@@ -40,13 +38,18 @@ const server = createServer((req, res) => {
         try {
           const orderData = JSON.parse(body);
           
-          // Convert prices to INR
+          // Format prices (already in INR)
           if (orderData.items) {
             orderData.items.forEach(item => {
               if (item.price) {
-                item.priceInr = convertToINR(item.price);
+                item.priceInr = formatINRPrice(item.price);
               }
             });
+          }
+          
+          // Ensure totalAmount is properly formatted in INR
+          if (orderData.totalAmount) {
+            orderData.totalAmount = formatINRPrice(orderData.totalAmount);
           }
           
           const order = {
