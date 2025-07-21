@@ -1,0 +1,20 @@
+{
+  "version": "1",
+  "auth": {
+    "aws_region": "us-east-1",
+    "user_pool_id": "placeholder-user-pool-id",
+    "user_pool_client_id": "placeholder-client-id",
+    "identity_pool_id": "placeholder-identity-pool-id"
+  },
+  "data": {
+    "aws_region": "us-east-1",
+    "url": "placeholder-appsync-url",
+    "api_key": "placeholder-api-key",
+    "default_authorization_type": "API_KEY",
+    "authorization_types": ["API_KEY", "AWS_IAM"]
+  },
+  "storage": {
+    "aws_region": "us-east-1",
+    "bucket_name": "placeholder-storage-bucket"
+  }
+}
