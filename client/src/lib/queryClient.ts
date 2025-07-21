@@ -41,57 +41,76 @@ async function handleAmplifyRequest(url: string, options: RequestInit = {}) {
   const method = options.method || 'GET';
   
   try {
-    // Check if AWS Amplify is configured
-    const { generateClient } = await import('aws-amplify/api');
-    const client = generateClient();
+    // Try using Gen 2 client first
+    let client;
+    try {
+      const { generateClient } = await import('aws-amplify/data');
+      client = generateClient();
+    } catch (gen2Error) {
+      // Fallback to Gen 1 GraphQL API
+      const { generateClient } = await import('aws-amplify/api');
+      client = generateClient();
+      return await handleGen1Request(client, url, options);
+    }
     
     if (url === '/api/orders' && method === 'POST') {
-      // Create order using AWS AppSync
+      // Create order using AWS Amplify Data Gen 2
       const orderData = JSON.parse(options.body as string);
-      const { createGuestOrder } = await import('@/lib/graphql-queries');
       
-      const result = await client.graphql({
-        query: createGuestOrder,
-        variables: {
-          input: {
-            ...orderData,
-            status: orderData.status || 'pending'
-          }
-        }
+      // Note: This will work once the backend is deployed
+      const result = await (client as any).models.Order.create({
+        customerName: orderData.customerName,
+        email: orderData.email,
+        phone: orderData.phone,
+        totalAmount: orderData.totalAmount,
+        status: orderData.status || 'pending',
+        totalPages: orderData.totalPages,
+        printType: orderData.printType,
+        paperSize: orderData.paperSize,
+        paperType: orderData.paperType,
+        sides: orderData.sides,
+        binding: orderData.binding,
+        copies: orderData.copies || 1,
+        deliveryAddress: orderData.deliveryAddress,
+        paymentMethod: orderData.paymentMethod,
+        paymentStatus: orderData.paymentStatus || 'pending',
+        fileNames: orderData.fileNames,
+        specialInstructions: orderData.specialInstructions,
+        userId: orderData.userId,
       });
       
-      const data = result.data as any;
-      return { success: true, order: data?.createGuestOrder };
+      return { success: true, order: result.data };
     }
     
     if (url === '/api/orders' && method === 'GET') {
-      // Get all orders using AWS AppSync
-      const { listOrders } = await import('@/lib/graphql-queries');
-      
-      const result = await client.graphql({
-        query: listOrders
-      });
-      
-      const data = result.data as any;
-      return data?.listOrders?.items || [];
+      // Get all orders using AWS Amplify Data Gen 2
+      const result = await (client as any).models.Order.list();
+      return result.data || [];
     }
     
     if (url.startsWith('/api/orders/') && method === 'GET') {
       // Get specific order by ID
       const orderId = url.split('/').pop();
-      const { getOrder } = await import('@/lib/graphql-queries');
+      const result = await (client as any).models.Order.get({ id: orderId });
       
-      const result = await client.graphql({
-        query: getOrder,
-        variables: { id: orderId }
-      });
-      
-      const data = result.data as any;
-      if (!data?.getOrder) {
+      if (!result.data) {
         throw new Error('Order not found');
       }
       
-      return data.getOrder;
+      return result.data;
+    }
+    
+    if (url.startsWith('/api/orders/') && method === 'PUT') {
+      // Update order status
+      const orderId = url.split('/').pop();
+      const updateData = JSON.parse(options.body as string);
+      
+      const result = await (client as any).models.Order.update({
+        id: orderId,
+        ...updateData
+      });
+      
+      return { success: true, order: result.data };
     }
     
     // For other requests, throw appropriate errors
@@ -136,6 +155,62 @@ async function handleAmplifyRequest(url: string, options: RequestInit = {}) {
     
     throw new Error(`API endpoint ${url} not available in static deployment`);
   }
+}
+
+// Handle Gen 1 GraphQL requests
+async function handleGen1Request(client: any, url: string, options: RequestInit = {}) {
+  const method = options.method || 'GET';
+  
+  if (url === '/api/orders' && method === 'POST') {
+    // Create order using Gen 1 GraphQL
+    const orderData = JSON.parse(options.body as string);
+    const { createGuestOrder } = await import('@/lib/graphql-queries');
+    
+    const result = await client.graphql({
+      query: createGuestOrder,
+      variables: {
+        input: {
+          ...orderData,
+          status: orderData.status || 'pending'
+        }
+      }
+    });
+    
+    const data = result.data as any;
+    return { success: true, order: data?.createGuestOrder };
+  }
+  
+  if (url === '/api/orders' && method === 'GET') {
+    // Get all orders using Gen 1 GraphQL
+    const { listOrders } = await import('@/lib/graphql-queries');
+    
+    const result = await client.graphql({
+      query: listOrders
+    });
+    
+    const data = result.data as any;
+    return data?.listOrders?.items || [];
+  }
+  
+  if (url.startsWith('/api/orders/') && method === 'GET') {
+    // Get specific order by ID using Gen 1
+    const orderId = url.split('/').pop();
+    const { getOrder } = await import('@/lib/graphql-queries');
+    
+    const result = await client.graphql({
+      query: getOrder,
+      variables: { id: orderId }
+    });
+    
+    const data = result.data as any;
+    if (!data?.getOrder) {
+      throw new Error('Order not found');
+    }
+    
+    return data.getOrder;
+  }
+  
+  throw new Error(`API endpoint ${url} not available`);
 }
 
 // Set default query function

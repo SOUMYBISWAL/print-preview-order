@@ -1,8 +1,2 @@
-# Handle API routes and static assets
-/api/*    /api/:splat   200
-/assets/*    /assets/:splat   200
-/favicon.ico    /favicon.ico   200
-/robots.txt    /robots.txt   200
-
-# SPA catch-all: send all other requests to index.html
+# Redirect all routes to index.html for SPA
 /*    /index.html   200

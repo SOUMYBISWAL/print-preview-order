@@ -11,6 +11,8 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@aws-amplify/backend": "^1.16.1",
+    "@aws-amplify/backend-cli": "^1.8.0",
     "@aws-amplify/ui-react": "^6.11.2",
     "@aws-amplify/ui-react-storage": "^3.11.0",
     "@hookform/resolvers": "^3.10.0",

@@ -159,6 +159,14 @@ Changelog:
   - Verified build process creates optimized dist/public directory
   - Added comprehensive AMPLIFY_DEPLOYMENT.md guide
   - Application now fully compatible with AWS Amplify hosting
+- July 21, 2025. Migrated from AWS Amplify Gen 1 to Gen 2 architecture
+  - Created new Gen 2 backend structure in amplify/ directory
+  - Updated frontend to support both Gen 1 and Gen 2 configurations
+  - Created Gen2FileUploader component with improved S3 storage integration
+  - Modified queryClient to handle Gen 2 data client with fallback to Gen 1
+  - Updated amplify.yml for Gen 2 deployment process
+  - Added configuration files for Auth, Data, and Storage resources
+  - Implemented backward compatibility for existing Gen 1 deployments
 ```
 
 ## User Preferences
