@@ -2,14 +2,14 @@
 
 ## Prerequisites
 
-1. **Delete Gen 1 Backend Environments** (Important!)
-   - Go to AWS Amplify Console → Your App → Manage backends
-   - Delete ALL existing backend environments
-   - Wait 5-10 minutes for complete deletion
-
-2. **GitHub Repository**
+1. **GitHub Repository**
    - Ensure your code is pushed to GitHub
    - Make sure the main/master branch has all latest changes
+
+2. **For Frontend-Only Deployment (Recommended)**
+   - This deployment will use localStorage for data storage
+   - File uploads will work locally but not persist to cloud storage
+   - Perfect for testing and demo purposes
 
 ## Deployment Steps
 
@@ -32,10 +32,12 @@ The amplify.yml handles:
 - Gen 2 backend deployment
 - Frontend build process
 
-### Step 3: Environment Variables (Optional)
+### Step 3: Build Settings Configuration
 
-For production database:
-- `DATABASE_URL`: Your PostgreSQL connection string
+If Amplify doesn't auto-detect, manually set:
+- **Build Command**: `npm run build`
+- **Build Output Directory**: `dist/public`
+- **Node.js Version**: Use default (the build will handle compatibility)
 
 ### Step 4: Deploy
 
