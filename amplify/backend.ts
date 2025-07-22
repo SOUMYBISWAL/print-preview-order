@@ -2,21 +2,15 @@ import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { storage } from './storage/resource';
-import { calculatePriceFunction } from './functions/calculate-price/resource';
-import { updateOrderStatusFunction } from './functions/update-order-status/resource';
-import { processPaymentFunction } from './functions/process-payment/resource';
 
 /**
  * PrintLite Backend Configuration
- * Complete AWS Amplify Gen 2 backend with all services
+ * AWS Amplify Gen 2 backend with core services
  */
 export const backend = defineBackend({
   auth,
   data,
   storage,
-  calculatePriceFunction,
-  updateOrderStatusFunction,
-  processPaymentFunction,
 });
 
 // Configure storage bucket with CORS

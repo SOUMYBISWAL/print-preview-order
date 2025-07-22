@@ -15,10 +15,10 @@ const schema = a.schema({
       address: a.string().required(),
       
       // Print settings
-      paperType: a.enum(['A4', 'A3', 'Letter']).required(),
-      paperQuality: a.enum(['70GSM', '90GSM', '120GSM']).required(),
-      printType: a.enum(['color', 'blackwhite']).required(),
-      sides: a.enum(['single', 'double']).required(),
+      paperType: a.string().required(),
+      paperQuality: a.string().required(),
+      printType: a.string().required(),
+      sides: a.string().required(),
       copies: a.integer().required(),
       
       // Pricing in INR
@@ -28,9 +28,9 @@ const schema = a.schema({
       currency: a.string().default('INR'),
       
       // Order status management
-      status: a.enum(['pending', 'processing', 'printing', 'ready', 'shipped', 'delivered', 'cancelled']).default('pending'),
-      paymentMethod: a.enum(['upi', 'card', 'cash']).required(),
-      paymentStatus: a.enum(['pending', 'paid', 'failed']).default('pending'),
+      status: a.string().default('pending'),
+      paymentMethod: a.string().required(),
+      paymentStatus: a.string().default('pending'),
       
       // File information
       fileNames: a.string().array().required(),
@@ -60,7 +60,7 @@ const schema = a.schema({
       name: a.string(),
       phone: a.string(),
       address: a.string(),
-      role: a.enum(['user', 'admin']).default('user'),
+      role: a.string().default('user'),
     })
     .authorization((allow) => [
       allow.owner(),
@@ -91,48 +91,14 @@ const schema = a.schema({
       key: a.string().required(),
       value: a.string().required(),
       description: a.string(),
-      category: a.enum(['pricing', 'general', 'payment']).default('general'),
+      category: a.string().default('general'),
       updatedBy: a.string(),
     })
     .authorization((allow) => [
       allow.group('admin'),
     ]),
 
-  // Custom mutations for business logic
-  calculatePrice: a
-    .mutation()
-    .arguments({
-      pages: a.integer().required(),
-      copies: a.integer().required(),
-      paperType: a.string().required(),
-      printType: a.string().required(),
-      paperQuality: a.string().required(),
-    })
-    .returns(a.json())
-    .authorization((allow) => [allow.authenticated(), allow.guest()])
-    .handler(a.handler.function('calculatePriceFunction')),
 
-  updateOrderStatus: a
-    .mutation()
-    .arguments({
-      orderId: a.string().required(),
-      status: a.string().required(),
-      adminNotes: a.string(),
-    })
-    .returns(a.ref('Order'))
-    .authorization((allow) => [allow.group('admin')])
-    .handler(a.handler.function('updateOrderStatusFunction')),
-
-  processPayment: a
-    .mutation()
-    .arguments({
-      orderId: a.string().required(),
-      paymentMethod: a.string().required(),
-      amount: a.float().required(),
-    })
-    .returns(a.json())
-    .authorization((allow) => [allow.authenticated()])
-    .handler(a.handler.function('processPaymentFunction')),
 });
 
 export type Schema = ClientSchema<typeof schema>;
