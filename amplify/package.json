@@ -2,15 +2,14 @@
   "name": "amplify-backend",
   "version": "1.0.0",
   "type": "module",
-  "engines": {
-    "node": ">=20.0.0"
-  },
   "scripts": {
     "build": "tsc && node --enable-source-maps dist/backend.js"
   },
+  "dependencies": {
+    "@aws-amplify/backend": "^1.16.1",
+    "@aws-amplify/backend-cli": "^1.8.0"
+  },
   "devDependencies": {
-    "@aws-amplify/backend": "^1.0.4",
-    "@aws-amplify/backend-cli": "^1.2.6",
     "typescript": "^5.6.3"
   }
 }
