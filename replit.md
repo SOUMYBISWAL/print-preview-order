@@ -184,6 +184,8 @@ Changelog:
   - Fixed AWS Amplify deployment errors by updating npm configuration to use --legacy-peer-deps
   - Removed corrupted package-lock.json files to prevent dependency conflicts
   - Added .nvmrc file to ensure Node.js 20 compatibility in deployments
+  - Temporarily disabled backend deployment in amplify.yml due to Node.js version conflicts
+  - Frontend-only deployment configured to resolve immediate deployment needs
 ```
 
 ## User Preferences
