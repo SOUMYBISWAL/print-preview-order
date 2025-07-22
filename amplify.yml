@@ -3,14 +3,15 @@ backend:
   phases:
     build:
       commands:
-        - cd amplify && npm ci
+        - cd amplify && rm -f package-lock.json && npm install --legacy-peer-deps
         - cd amplify && npm run build
         - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json --out-dir .
 frontend:
   phases:
     preBuild:
       commands:
-        - npm install --force
+        - rm -f package-lock.json
+        - npm install --legacy-peer-deps
     build:
       commands:
         - npm run build

@@ -181,6 +181,9 @@ Changelog:
   - Order management, admin panel, and currency display (₹) working correctly
   - Migration complete with proper client/server separation and security practices
   - Ready for continued development and deployment
+  - Fixed AWS Amplify deployment errors by updating npm configuration to use --legacy-peer-deps
+  - Removed corrupted package-lock.json files to prevent dependency conflicts
+  - Added .nvmrc file to ensure Node.js 20 compatibility in deployments
 ```
 
 ## User Preferences
