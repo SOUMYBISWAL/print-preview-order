@@ -191,6 +191,9 @@ Changelog:
   - Enhanced API routes with INR pricing calculations and currency display
   - Implemented automatic S3/local file upload detection and switching
   - Ready for AWS Amplify deployment with full backend functionality
+  - Fixed AWS Amplify build error by adding conditional directory checks in amplify.yml
+  - Made backend build conditional to handle missing amplify directory gracefully
+  - Deployment now succeeds as frontend-only if backend setup needs adjustments
 ```
 
 ## User Preferences
