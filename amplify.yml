@@ -1,4 +1,11 @@
 version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - cd amplify && npm ci
+        - cd amplify && npm run build
+        - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json --out-dir .
 frontend:
   phases:
     preBuild:
@@ -14,3 +21,4 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
+      - amplify/node_modules/**/*
