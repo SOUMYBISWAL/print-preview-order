@@ -203,6 +203,8 @@ Changelog:
   - All API functionality verified including order creation with INR currency support
   - Fixed AWS Amplify S3 CORS deployment error by removing problematic addPropertyOverride
   - Backend configuration cleaned for successful AWS deployment
+  - Fixed Node.js ES module import errors by adding .js extensions to all import paths
+  - Added all Lambda functions to backend definition for complete AWS Amplify Gen 2 setup
 ```
 
 ## User Preferences

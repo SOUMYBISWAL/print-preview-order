@@ -1,7 +1,10 @@
 import { defineBackend } from '@aws-amplify/backend';
-import { auth } from './auth/resource';
-import { data } from './data/resource';
-import { storage } from './storage/resource';
+import { auth } from './auth/resource.js';
+import { data } from './data/resource.js';
+import { storage } from './storage/resource.js';
+import { calculatePriceFunction } from './functions/calculate-price/resource.js';
+import { processPaymentFunction } from './functions/process-payment/resource.js';
+import { updateOrderStatusFunction } from './functions/update-order-status/resource.js';
 
 /**
  * PrintLite Backend Configuration
@@ -11,6 +14,9 @@ export const backend = defineBackend({
   auth,
   data,
   storage,
+  calculatePriceFunction,
+  processPaymentFunction,
+  updateOrderStatusFunction,
 });
 
 // Configure CORS for the storage bucket (if it's a new bucket)
