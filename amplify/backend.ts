@@ -13,13 +13,15 @@ export const backend = defineBackend({
   storage,
 });
 
-// Configure storage bucket with CORS
-backend.storage.resources.bucket.addCorsRule({
-  allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'],
-  allowedOrigins: ['*'],
-  allowedHeaders: ['*'],
-  exposedHeaders: ['ETag'],
-  maxAge: 3000,
+// Configure storage bucket with CORS - define during bucket creation
+backend.storage.resources.bucket.addPropertyOverride('CorsConfiguration', {
+  CorsRules: [{
+    AllowedHeaders: ['*'],
+    AllowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'],
+    AllowedOrigins: ['*'],
+    ExposedHeaders: ['ETag'],
+    MaxAge: 3000,
+  }]
 });
 
 // Configure additional policies if needed
