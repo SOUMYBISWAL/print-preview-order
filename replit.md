@@ -201,6 +201,8 @@ Changelog:
   - Migration successfully completed with all security practices maintained
   - Created working server starter (start-app.js) using simple-server.cjs approach
   - All API functionality verified including order creation with INR currency support
+  - Fixed AWS Amplify S3 CORS deployment error by removing problematic addPropertyOverride
+  - Backend configuration cleaned for successful AWS deployment
 ```
 
 ## User Preferences

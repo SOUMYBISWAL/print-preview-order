@@ -13,16 +13,8 @@ export const backend = defineBackend({
   storage,
 });
 
-// Configure storage bucket with CORS - define during bucket creation
-backend.storage.resources.bucket.addPropertyOverride('CorsConfiguration', {
-  CorsRules: [{
-    AllowedHeaders: ['*'],
-    AllowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'],
-    AllowedOrigins: ['*'],
-    ExposedHeaders: ['ETag'],
-    MaxAge: 3000,
-  }]
-});
+// Configure CORS for the storage bucket (if it's a new bucket)
+// Note: CORS configuration is now handled in the storage resource definition
 
 // Configure additional policies if needed
 const { cfnUserPool } = backend.auth.resources.cfnResources;
