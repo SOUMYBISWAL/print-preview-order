@@ -10,7 +10,7 @@ import { updateOrderStatusFunction } from './functions/update-order-status/resou
  * PrintLite Backend Configuration
  * AWS Amplify Gen 2 backend with core services
  */
-export const backend = defineBackend({
+const backend = defineBackend({
   auth,
   data,
   storage,
@@ -18,6 +18,8 @@ export const backend = defineBackend({
   processPaymentFunction,
   updateOrderStatusFunction,
 });
+
+export default backend;
 
 // Configure CORS for the storage bucket (if it's a new bucket)
 // Note: CORS configuration is now handled in the storage resource definition
