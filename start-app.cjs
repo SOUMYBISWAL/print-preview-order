@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 
+// Wrapper script to start the server using the working CommonJS server
+// This bypasses the tsx dependency issue
 const { spawn } = require('child_process');
 
-console.log('Starting PrintLite application...');
+console.log('Starting PrintLite server...');
 
-const child = spawn('node', ['server/simple-server.cjs'], {
+const serverProcess = spawn('node', ['start-server.cjs'], {
   stdio: 'inherit',
-  cwd: process.cwd(),
-  env: { ...process.env, NODE_ENV: 'development' }
+  env: { 
+    ...process.env, 
+    NODE_ENV: process.env.NODE_ENV || 'development' 
+  }
 });
 
-child.on('exit', (code) => {
-  console.log(`Application exited with code ${code}`);
-  process.exit(code);
+serverProcess.on('close', (code) => {
+  console.log(`Server process exited with code ${code}`);
 });
 
-child.on('error', (err) => {
-  console.error('Failed to start application:', err);
-  process.exit(1);
+serverProcess.on('error', (err) => {
+  console.error('Failed to start server:', err);
 });
