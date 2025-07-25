@@ -3,8 +3,7 @@ backend:
   phases:
     build:
       commands:
-        - if [ -d "amplify" ]; then cd amplify && npm install --force && npm run build; fi
-        - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json --out-dir . || echo "Backend generation skipped"
+        - echo "Skipping backend build - frontend-only deployment"
 frontend:
   phases:
     preBuild:
@@ -13,7 +12,7 @@ frontend:
         - npm install --force
     build:
       commands:
-        - npm run build
+        - npx vite build
   artifacts:
     baseDirectory: dist/public
     files:
@@ -21,4 +20,3 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
-      - amplify/node_modules/**/*
