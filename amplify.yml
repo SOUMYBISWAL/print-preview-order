@@ -1,19 +1,12 @@
 version: 1
-backend:
-  phases:
-    build:
-      commands:
-        - cd amplify && npm install --force
-        - cd amplify && npm run build
 frontend:
   phases:
     preBuild:
       commands:
-        - rm -f package-lock.json
-        - npm install --force
+        - npm install
     build:
       commands:
-        - npx vite build
+        - npm run build
   artifacts:
     baseDirectory: dist/public
     files:
