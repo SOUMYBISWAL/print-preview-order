@@ -199,7 +199,10 @@ const Upload = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Upload Your Files</h1>
           
-          {/* Local File Upload */}
+          {/* Local file upload */}
+          {false ? (
+            <div></div>
+          ) : (
             <Card className="mb-6">
               <CardContent className="p-6">
                 <div
@@ -230,6 +233,7 @@ const Upload = () => {
                 </div>
               </CardContent>
             </Card>
+          )}
           
           {isCountingPages && (
             <div className="text-center py-4">

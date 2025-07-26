@@ -1,0 +1,76 @@
+{
+  "version": "1",
+  "auth": {
+    "aws_region": "us-east-1",
+    "user_pool_id": "us-east-1_EXAMPLE",
+    "user_pool_client_id": "EXAMPLE123456789",
+    "identity_pool_id": "us-east-1:example-1234-5678-9012-123456789012",
+    "password_policy": {
+      "min_length": 8,
+      "require_numbers": true,
+      "require_lowercase": true,
+      "require_uppercase": true,
+      "require_symbols": false
+    },
+    "standard_required_attributes": ["email"],
+    "username_attributes": ["email"],
+    "user_verification_types": ["email"],
+    "mfa_configuration": "OFF",
+    "mfa_types": ["SMS"],
+    "groups": [
+      {
+        "group_name": "ADMIN",
+        "description": "Administrator group with full access"
+      },
+      {
+        "group_name": "USER", 
+        "description": "Regular user group with limited access"
+      }
+    ]
+  },
+  "data": {
+    "aws_region": "us-east-1",
+    "url": "https://example.appsync-api.us-east-1.amazonaws.com/graphql",
+    "api_key": "da2-fakeApiId123456",
+    "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
+    "authorization_types": ["AWS_IAM", "API_KEY"]
+  },
+  "storage": {
+    "aws_region": "us-east-1",
+    "bucket_name": "printlite-storage-EXAMPLE",
+    "paths": {
+      "uploads/*": {
+        "authenticated": ["read", "write", "delete"],
+        "guest": []
+      },
+      "public/*": {
+        "authenticated": ["read"],
+        "guest": ["read"]
+      },
+      "orders/*": {
+        "authenticated": ["read", "write"],
+        "guest": []
+      },
+      "processed/*": {
+        "authenticated": ["read"],
+        "guest": []
+      }
+    }
+  },
+  "custom": {
+    "functions": {
+      "calculatePrice": {
+        "name": "printlite-calculatePrice",
+        "region": "us-east-1"
+      },
+      "processPayment": {
+        "name": "printlite-processPayment", 
+        "region": "us-east-1"
+      },
+      "updateOrderStatus": {
+        "name": "printlite-updateOrderStatus",
+        "region": "us-east-1"
+      }
+    }
+  }
+}

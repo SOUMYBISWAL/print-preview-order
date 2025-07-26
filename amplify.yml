@@ -1,24 +1,23 @@
 version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - npm ci --cache .npm --prefer-offline
+        - npx amplify backend build
 frontend:
   phases:
     preBuild:
       commands:
-        - nvm use 20
-        - echo "Installing dependencies for frontend build..."
-        - npm ci --legacy-peer-deps
+        - npm ci --cache .npm --prefer-offline
     build:
       commands:
-        - echo "Building PrintLite frontend for AWS Amplify..."
-        - echo "Skipping AWS Amplify backend dependencies..."
-        - npx vite build --mode production
-    postBuild:
-      commands:
-        - echo "Build completed successfully"
-        - ls -la dist/public
+        - npm run build
   artifacts:
     baseDirectory: dist/public
     files:
       - '**/*'
   cache:
     paths:
+      - .npm/**/*
       - node_modules/**/*
