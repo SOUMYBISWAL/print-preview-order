@@ -6,9 +6,7 @@ import { Upload as UploadIcon, FileText, FileImage } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import AmplifyFileUploader from "@/components/AmplifyFileUploader";
 import LocalFileUploader from "@/components/LocalFileUploader";
-import { hasAWSCredentials } from "@/lib/amplify";
 
 
 interface FileWithPages extends File {
@@ -201,25 +199,7 @@ const Upload = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Upload Your Files</h1>
           
-          {/* Use Amplify File Uploader if AWS credentials are available, otherwise fallback to local */}
-          {hasAWSCredentials ? (
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-medium mb-4">Upload to Cloud Storage (S3)</h3>
-                <AmplifyFileUploader
-                  onFilesUploaded={handleFilesUploaded}
-                  maxFileCount={10}
-                  acceptedFileTypes={[
-                    'application/pdf',
-                    'application/msword',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'image/*',
-                    'text/plain'
-                  ]}
-                />
-              </CardContent>
-            </Card>
-          ) : (
+          {/* Local File Upload */}
             <Card className="mb-6">
               <CardContent className="p-6">
                 <div
@@ -250,7 +230,6 @@ const Upload = () => {
                 </div>
               </CardContent>
             </Card>
-          )}
           
           {isCountingPages && (
             <div className="text-center py-4">

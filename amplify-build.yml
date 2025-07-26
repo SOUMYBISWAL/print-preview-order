@@ -4,17 +4,13 @@ frontend:
     preBuild:
       commands:
         - nvm use 20
-        - echo "Installing dependencies for frontend build..."
-        - npm ci --legacy-peer-deps
+        - echo "Installing dependencies for frontend-only build..."
+        - npm ci --only=production --ignore-optional
+        - npm install react react-dom @vitejs/plugin-react vite typescript
     build:
       commands:
         - echo "Building PrintLite frontend for AWS Amplify..."
-        - echo "Skipping AWS Amplify backend dependencies..."
         - npx vite build --mode production
-    postBuild:
-      commands:
-        - echo "Build completed successfully"
-        - ls -la dist/public
   artifacts:
     baseDirectory: dist/public
     files:
