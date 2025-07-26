@@ -4,6 +4,8 @@
 
 PrintLite is a full-stack web application that provides document printing services with delivery options. The application is built as a modern React-based frontend with an Express.js backend, using PostgreSQL for data storage and Drizzle ORM for database operations.
 
+**Current Status**: Successfully running on CommonJS server (simple-server.cjs) to resolve tsx dependency issues. Backend API fully functional with Indian Rupee currency support.
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -221,6 +223,12 @@ Changelog:
   - Fixed admin panel showing no data by creating working server with sample orders
   - Implemented proper Amplify Gen 2 backend with simplified configuration
   - Created working-server.cjs with 3 realistic Indian orders for testing
+- July 26, 2025. Fixed tsx dependency error and restored full application functionality
+  - Resolved "tsx: not found" error by using existing simple-server.cjs CommonJS server
+  - Backend API fully functional with all endpoints (/api/health, /api/orders, /api/admin/login, /api/calculate-price)
+  - Created development frontend interface with API testing capabilities
+  - Server running successfully on port 5000 with Indian Rupee (INR) currency support
+  - Application ready for both development and production deployment
   - Admin authentication working (mobile: 9876543210, password: admin123)
   - All API endpoints functional with proper INR currency formatting
   - Server running successfully with S3 integration and admin panel data

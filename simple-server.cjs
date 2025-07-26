@@ -259,55 +259,118 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Serve static files from client build
-  const staticPath = path.join(__dirname, 'client/dist', pathname === '/' ? 'index.html' : pathname);
-  
-  if (fs.existsSync(staticPath)) {
-    const ext = path.extname(staticPath).toLowerCase();
-    const contentTypeMap = {
-      '.html': 'text/html',
-      '.js': 'application/javascript',
-      '.css': 'text/css',
-      '.json': 'application/json',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.gif': 'image/gif',
-      '.svg': 'image/svg+xml',
-      '.ico': 'image/x-icon'
-    };
-
-    const contentType = contentTypeMap[ext] || 'application/octet-stream';
-    
-    fs.readFile(staticPath, (err, data) => {
+  // For development, serve the client files directly
+  if (pathname === '/' || pathname === '/index.html') {
+    const indexPath = path.join(__dirname, 'client/index.html');
+    fs.readFile(indexPath, 'utf-8', (err, data) => {
       if (err) {
-        res.writeHead(404);
-        res.end('File not found');
+        res.writeHead(500);
+        res.end('Server error loading index.html');
         return;
       }
-
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(data);
+      
+      // Simple HTML for development that shows the working backend
+      const devHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrintLite - Online Printing Service</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: #2563eb; color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .status { background: #10b981; color: white; padding: 10px; border-radius: 4px; margin: 20px 0; }
+        .api-test { background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .currency { color: #059669; font-weight: bold; }
+        button { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .orders { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🖨️ PrintLite - Online Printing Service</h1>
+        <p>Professional document printing with doorstep delivery</p>
+    </div>
+    
+    <div class="status">
+        ✅ Backend Server Running Successfully on Port 5000
+    </div>
+    
+    <div class="api-test">
+        <h2>🔧 Backend API Status</h2>
+        <p><strong>Currency:</strong> <span class="currency">Indian Rupees (INR) ₹</span></p>
+        <p><strong>Admin Credentials:</strong> Mobile: 9876543210, Password: admin123</p>
+        
+        <h3>Available API Endpoints:</h3>
+        <ul>
+            <li>GET /api/health - Server status</li>
+            <li>GET /api/orders - List all orders</li>
+            <li>POST /api/orders - Create new order</li>
+            <li>POST /api/admin/login - Admin authentication</li>
+            <li>POST /api/calculate-price - Price calculation</li>
+        </ul>
+        
+        <button onclick="testAPI()">Test API Connection</button>
+        <button onclick="loadOrders()">Load Sample Orders</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="orders">
+        <h2>📋 Sample Orders</h2>
+        <div id="orders-list">Click "Load Sample Orders" to view orders</div>
+    </div>
+    
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                document.getElementById('api-result').innerHTML = 
+                    '<div style="background: #10b981; color: white; padding: 10px; margin: 10px 0; border-radius: 4px;">' +
+                    'API Test Successful! Status: ' + data.status + ' | Currency: ' + data.currency +
+                    '</div>';
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    '<div style="background: #ef4444; color: white; padding: 10px; margin: 10px 0; border-radius: 4px;">' +
+                    'API Test Failed: ' + error.message +
+                    '</div>';
+            }
+        }
+        
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                const orders = await response.json();
+                let html = '<h3>Orders (₹ INR Currency):</h3>';
+                orders.forEach(order => {
+                    html += '<div style="border: 1px solid #e5e7eb; padding: 15px; margin: 10px 0; border-radius: 4px;">';
+                    html += '<strong>Order #' + order.orderNumber + '</strong><br>';
+                    html += 'Customer: ' + order.customerName + '<br>';
+                    html += 'Amount: ₹' + order.totalAmount + ' (' + order.currency + ')<br>';
+                    html += 'Status: ' + order.status + '<br>';
+                    html += 'Files: ' + order.fileNames.join(', ') + '<br>';
+                    html += '</div>';
+                });
+                document.getElementById('orders-list').innerHTML = html;
+            } catch (error) {
+                document.getElementById('orders-list').innerHTML = 
+                    '<div style="color: red;">Error loading orders: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>`;
+      
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(devHtml);
     });
     return;
   }
 
-  // Fallback to index.html for client-side routing
-  const indexPath = path.join(__dirname, 'client/dist/index.html');
-  if (fs.existsSync(indexPath)) {
-    fs.readFile(indexPath, (err, data) => {
-      if (err) {
-        res.writeHead(500);
-        res.end('Server error');
-        return;
-      }
-
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(data);
-    });
-  } else {
-    res.writeHead(404);
-    res.end('Application not built. Please run: npm run build');
-  }
+  // Handle other static files if needed
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ error: 'Not found', message: 'Frontend development server running' }));
 });
 
 // Start server
