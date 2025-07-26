@@ -4,7 +4,7 @@
 
 PrintLite is a full-stack web application that provides document printing services with delivery options. The application is built as a modern React-based frontend with an Express.js backend, using PostgreSQL for data storage and Drizzle ORM for database operations.
 
-**Current Status**: Successfully running on CommonJS server (simple-server.cjs) to resolve tsx dependency issues. Backend API fully functional with Indian Rupee currency support.
+**Current Status**: Migration from Replit Agent to Replit environment completed successfully. Running on CommonJS server (simple-server.cjs) to resolve tsx dependency issues. Backend API fully functional with Indian Rupee currency support on port 5000.
 
 ## System Architecture
 
