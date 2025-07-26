@@ -236,14 +236,17 @@ Changelog:
   - Fixed AWS Amplify deployment errors by removing problematic backend build commands
   - Updated amplify.yml for frontend-only deployment without amplify directory conflicts
   - Migration successfully completed with working server and deployment configuration
-  - Configured complete AWS Amplify Gen 2 backend with full infrastructure:
-    * Authentication with Cognito User Pools and admin/user groups
-    * GraphQL API with comprehensive PrintLite schema (Orders, Users, Files, Config)
-    * S3 storage for secure file uploads with user isolation
-    * Lambda functions for price calculation, payment processing, and order management
-    * Complete Indian pricing structure with INR currency and GST calculation
-  - Created comprehensive deployment documentation (AMPLIFY_GEN2_DEPLOYMENT.md)
+  - Configured complete AWS Amplify Gen 2 backend with full infrastructure
   - Backend ready for production deployment with proper build configuration
+- July 26, 2025. Cleaned up project and removed unused backend resources
+  - Removed all AWS Amplify backend resources and related files (amplify/ directory)
+  - Deleted unused deployment documentation files
+  - Removed AWS-specific components (AmplifyFileUploader, Gen2FileUploader)
+  - Cleaned up queryClient to remove AWS dependencies
+  - Created simple-server.cjs using built-in Node.js HTTP module to avoid dependency issues
+  - Server successfully running on port 5000 with all API endpoints functional
+  - Migration complete with clean, minimal codebase for local development
+  - Ready for continued development without external dependencies
 ```
 
 ## User Preferences
