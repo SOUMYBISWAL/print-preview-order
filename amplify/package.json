@@ -1,0 +1,17 @@
+{
+  "name": "printlite-amplify-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && node --enable-source-maps dist/backend.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@aws-amplify/backend": "^1.0.4",
+    "@aws-amplify/backend-cli": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
