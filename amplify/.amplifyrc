@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "default": {
-      "configLevel": "project",
-      "useProfile": true,
-      "profileName": "default"
-    }
-  }
-}
