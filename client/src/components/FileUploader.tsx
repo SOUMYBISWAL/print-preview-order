@@ -172,8 +172,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           // Save to localStorage for checkout process
           localStorage.setItem('uploadedFiles', JSON.stringify(completedFiles));
           
-          // Notify parent component
-          onFilesUploaded(completedFiles);
+          // Schedule parent notification for next tick to avoid setState during render
+          setTimeout(() => {
+            onFilesUploaded(completedFiles);
+          }, 0);
           
           return updated;
         });
@@ -238,7 +240,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         }));
       
       localStorage.setItem('uploadedFiles', JSON.stringify(completedFiles));
-      onFilesUploaded(completedFiles);
+      
+      // Schedule parent notification for next tick to avoid setState during render
+      setTimeout(() => {
+        onFilesUploaded(completedFiles);
+      }, 0);
       
       return updated;
     });
