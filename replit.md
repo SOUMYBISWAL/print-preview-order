@@ -107,7 +107,19 @@ The application supports two deployment modes:
 - **Production**: Vite build with esbuild for backend bundling
 - **Static Build**: Custom build script for frontend-only deployment
 
-The architecture is designed to gracefully handle missing database connections by falling back to localStorage-based operations, making it suitable for both dynamic and static hosting environments.
+The architecture supports hybrid deployment:
+
+### Hybrid Backend Architecture (Updated - July 27, 2025)
+- **Development**: Node.js Express server with in-memory storage (Replit)
+- **Production**: AWS Amplify Gen 2 with Cognito Auth, GraphQL API, and S3 Storage
+- **Environment Detection**: Automatic switching based on environment variables
+- **Fallback Strategy**: Graceful degradation from cloud to local backend
+
+### AWS Amplify Gen 2 Resources
+- **Authentication**: Cognito User Pools with email login and user groups
+- **Data**: GraphQL API with Order and PrintSettings models
+- **Storage**: S3 bucket for file uploads with proper access controls
+- **Authorization**: Role-based access (GUEST, USER, ADMIN)
 
 ## Recent Cleanup (July 27, 2025)
 
@@ -126,3 +138,7 @@ Successfully removed all backend resources and deployment configuration files:
 - ✓ Fixed file upload system to use real backend API endpoints
 - ✓ Added proper admin authentication and health check endpoints
 - ✓ Removed localStorage fallback logic in favor of backend-only operations
+- ✓ Created AWS Amplify Gen 2 environment structure
+- ✓ Configured hybrid architecture: Node.js backend for development, Amplify Gen 2 for production
+- ✓ Added proper TypeScript configuration for both environments
+- ✓ Created environment-based configuration switching
