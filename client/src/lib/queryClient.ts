@@ -11,8 +11,12 @@ export const queryClient = new QueryClient({
 
 // Default fetcher function for React Query
 export async function apiRequest(url: string, options: RequestInit = {}) {
-  // Always use the Node.js backend API
-  const response = await fetch(url, {
+  // Use environment-specific API URL
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 
+                     (import.meta.env.DEV ? 'http://localhost:5000' : '');
+  const fullUrl = url.startsWith('http') ? url : `${apiBaseUrl}${url}`;
+  
+  const response = await fetch(fullUrl, {
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
