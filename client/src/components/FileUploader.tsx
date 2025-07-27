@@ -73,38 +73,26 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   };
 
   const uploadFile = async (file: File): Promise<string> => {
-    // Simulate file upload to AWS S3 or local server
-    const isLocal = window.location.hostname.includes('replit.dev') || 
-                    window.location.hostname.includes('localhost');
-    
-    if (isLocal) {
-      // For local development, simulate upload
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const key = `uploads/${Date.now()}_${file.name}`;
-          resolve(key);
-        }, 1000 + Math.random() * 2000);
+    // Use the Node.js backend upload endpoint
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
       });
-    } else {
-      // For AWS deployment, use actual S3 upload
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          throw new Error('Upload failed');
-        }
-        
-        const result = await response.json();
-        return result.key;
-      } catch (error) {
-        throw new Error('Failed to upload to server');
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Upload failed');
       }
+      
+      const result = await response.json();
+      return result.key;
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to upload to server');
     }
   };
 

@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await fs.mkdir(uploadDir, { recursive: true });
         cb(null, uploadDir);
       } catch (error) {
-        cb(error, uploadDir);
+        cb(error instanceof Error ? error : new Error('Failed to create upload directory'), uploadDir);
       }
     },
     filename: (req, file, cb) => {
@@ -197,7 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new Error('File type not supported'), false);
+        cb(new Error('File type not supported'));
       }
     }
   });
@@ -228,7 +228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Upload error:', error);
       res.status(500).json({ 
         error: 'Failed to upload file',
-        message: error.message 
+        message: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -249,6 +249,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Download error:', error);
       res.status(404).json({ error: 'File not found' });
     }
+  });
+
+  // Admin login endpoint
+  app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { mobile, password } = req.body;
+      
+      // Admin credentials: mobile=9876543210, password=admin123
+      if (mobile === '9876543210' && password === 'admin123') {
+        const admin = {
+          id: 1,
+          mobile: '9876543210',
+          role: 'admin',
+          name: 'Admin User'
+        };
+        res.json({ success: true, admin });
+      } else {
+        res.status(401).json({ error: 'Invalid credentials' });
+      }
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  // Health check endpoint
+  app.get('/api/health', (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      message: 'PrintLite backend server running',
+      timestamp: new Date().toISOString()
+    });
   });
 
   const httpServer = createServer(app);
