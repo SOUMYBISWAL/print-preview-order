@@ -1,10 +1,10 @@
 import { defineBackend } from '@aws-amplify/backend';
-import { auth } from './auth/resource.js';
-import { data } from './data/resource.js';
-import { storage } from './storage/resource.js';
-import { calculatePrice } from './functions/calculate-price/resource.js';
-import { processPayment } from './functions/process-payment/resource.js';
-import { updateOrderStatus } from './functions/update-order-status/resource.js';
+import { auth } from './auth/resource';
+import { data } from './data/resource';
+import { storage } from './storage/resource';
+import { calculatePrice } from './functions/calculate-price/resource';
+import { processPayment } from './functions/process-payment/resource';
+import { updateOrderStatus } from './functions/update-order-status/resource';
 
 /**
  * PrintLite Backend Configuration
@@ -36,6 +36,6 @@ try {
       },
     };
   }
-} catch (error) {
+} catch (error: any) {
   console.warn('User pool configuration skipped:', error.message);
 }

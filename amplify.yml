@@ -1,14 +1,11 @@
 version: 1
-backend:
-  phases:
-    build:
-      commands:
-        - npm ci --cache .npm --prefer-offline
-        - npx amplify backend build
 frontend:
   phases:
     preBuild:
       commands:
+        - nvm use $(cat .nvmrc)
+        - node --version
+        - npm --version
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
