@@ -90,6 +90,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       }
       
       const result = await response.json();
+      console.log('Upload response:', result);
       return { 
         key: result.file.key || result.key,
         pages: result.file.pages || 1

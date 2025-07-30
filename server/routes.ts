@@ -204,30 +204,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to estimate page count based on file type and size
   const estimatePageCount = (file: Express.Multer.File): number => {
-    const { mimetype, size } = file;
+    const { mimetype, size, originalname } = file;
+    console.log(`Estimating pages for file: ${originalname}, type: ${mimetype}, size: ${size} bytes`);
     
-    // For PDFs, assume average 50KB per page (conservative estimate)
+    let estimatedPages = 1;
+    
+    // For PDFs, assume average 200KB per page (more realistic estimate)
     if (mimetype === 'application/pdf') {
-      return Math.max(1, Math.ceil(size / (50 * 1024)));
+      estimatedPages = Math.max(1, Math.ceil(size / (200 * 1024)));
     }
-    
-    // For Word documents, assume average 30KB per page
-    if (mimetype.includes('word') || mimetype.includes('document')) {
-      return Math.max(1, Math.ceil(size / (30 * 1024)));
+    // For Word documents, assume average 100KB per page
+    else if (mimetype.includes('word') || mimetype.includes('document')) {
+      estimatedPages = Math.max(1, Math.ceil(size / (100 * 1024)));
     }
-    
     // For images, assume 1 page per image
-    if (mimetype.startsWith('image/')) {
-      return 1;
+    else if (mimetype.startsWith('image/')) {
+      estimatedPages = 1;
+    }
+    // For text files, estimate based on size (assume 5KB per page)
+    else if (mimetype === 'text/plain') {
+      estimatedPages = Math.max(1, Math.ceil(size / (5 * 1024)));
+    }
+    // For other document types, use a general estimate
+    else {
+      estimatedPages = Math.max(1, Math.ceil(size / (150 * 1024)));
     }
     
-    // For text files, estimate based on size (assume 2KB per page)
-    if (mimetype === 'text/plain') {
-      return Math.max(1, Math.ceil(size / (2 * 1024)));
-    }
-    
-    // Default fallback: 1 page
-    return 1;
+    console.log(`Estimated ${estimatedPages} pages for ${originalname}`);
+    return estimatedPages;
   };
 
   // File upload endpoint
@@ -249,6 +253,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pages: estimatedPages,
         uploadedAt: new Date().toISOString()
       };
+
+      console.log('Sending response with file data:', fileData);
 
       res.json({
         success: true,

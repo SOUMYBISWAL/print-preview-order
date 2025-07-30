@@ -134,11 +134,13 @@ The architecture supports hybrid deployment:
 - ✓ Fixed all TypeScript and LSP diagnostic issues
 - ✓ Improved user experience with automatic navigation after upload
 
-**Page Counting Logic:**
-- PDF files: Estimated at 50KB per page
-- Word documents: Estimated at 30KB per page  
+**Updated Page Counting Logic:**
+- PDF files: Estimated at 200KB per page (more realistic)
+- Word documents: Estimated at 100KB per page  
 - Images: 1 page per file
-- Text files: Estimated at 2KB per page
+- Text files: Estimated at 5KB per page
+- Other documents: Estimated at 150KB per page
+- Added console logging to debug page calculations
 - All files display accurate page counts for pricing
 
 ## Recent Cleanup (July 27, 2025)
