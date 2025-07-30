@@ -6,7 +6,7 @@ import { FileText, Image, File, X, Check, Upload as UploadIcon } from 'lucide-re
 import { toast } from "sonner";
 
 interface FileUploaderProps {
-  onFilesUploaded: (files: Array<{ key: string; name: string; size: number; type: string }>) => void;
+  onFilesUploaded: (files: Array<{ key: string; name: string; size: number; type: string; pages: number }>) => void;
   maxFileCount?: number;
   acceptedFileTypes?: string[];
 }
@@ -16,6 +16,7 @@ interface UploadedFile {
   name: string;
   size: number;
   type: string;
+  pages: number;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
   file?: File;
@@ -72,7 +73,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     return null;
   };
 
-  const uploadFile = async (file: File): Promise<string> => {
+  const uploadFile = async (file: File): Promise<{ key: string; pages: number }> => {
     // Use the Node.js backend upload endpoint
     try {
       const formData = new FormData();
@@ -89,7 +90,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       }
       
       const result = await response.json();
-      return result.key;
+      return { 
+        key: result.file.key || result.key,
+        pages: result.file.pages || 1
+      };
     } catch (error) {
       console.error('Upload error:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to upload to server');
@@ -117,6 +121,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         name: file.name,
         size: file.size,
         type: file.type,
+        pages: 1, // Temporary value, will be updated from backend
         progress: 0,
         status: 'uploading',
         file
@@ -136,14 +141,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           );
         }, 200);
 
-        const uploadedKey = await uploadFile(file);
+        const result = await uploadFile(file);
         
         clearInterval(progressInterval);
         
         setUploadedFiles(prev => {
           const updated = prev.map(f => 
             f.key === tempKey 
-              ? { ...f, key: uploadedKey, status: 'completed' as const, progress: 100 }
+              ? { ...f, key: result.key, status: 'completed' as const, progress: 100, pages: result.pages }
               : f
           );
           
@@ -154,7 +159,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               key: f.key,
               name: f.name,
               size: f.size,
-              type: f.type
+              type: f.type,
+              pages: f.pages
             }));
           
           // Save to localStorage for checkout process
@@ -224,7 +230,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           key: f.key,
           name: f.name,
           size: f.size,
-          type: f.type
+          type: f.type,
+          pages: f.pages
         }));
       
       localStorage.setItem('uploadedFiles', JSON.stringify(completedFiles));

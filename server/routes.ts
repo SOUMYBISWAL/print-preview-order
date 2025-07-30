@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
 import { storage } from "./storage";
-import { insertOrderSchema, updateOrderSchema } from "@shared/schema";
+import { insertOrderSchema, updateOrderSchema } from "../shared/schema.js";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -202,6 +202,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to estimate page count based on file type and size
+  const estimatePageCount = (file: Express.Multer.File): number => {
+    const { mimetype, size } = file;
+    
+    // For PDFs, assume average 50KB per page (conservative estimate)
+    if (mimetype === 'application/pdf') {
+      return Math.max(1, Math.ceil(size / (50 * 1024)));
+    }
+    
+    // For Word documents, assume average 30KB per page
+    if (mimetype.includes('word') || mimetype.includes('document')) {
+      return Math.max(1, Math.ceil(size / (30 * 1024)));
+    }
+    
+    // For images, assume 1 page per image
+    if (mimetype.startsWith('image/')) {
+      return 1;
+    }
+    
+    // For text files, estimate based on size (assume 2KB per page)
+    if (mimetype === 'text/plain') {
+      return Math.max(1, Math.ceil(size / (2 * 1024)));
+    }
+    
+    // Default fallback: 1 page
+    return 1;
+  };
+
   // File upload endpoint
   app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
@@ -209,12 +237,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
+      // Estimate page count based on file type and size
+      const estimatedPages = estimatePageCount(req.file);
+
       const fileData = {
         key: `uploads/${req.file.filename}`,
         name: req.file.originalname,
         size: req.file.size,
         type: req.file.mimetype,
         path: req.file.path,
+        pages: estimatedPages,
         uploadedAt: new Date().toISOString()
       };
 

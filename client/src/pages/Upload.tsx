@@ -9,13 +9,13 @@ import FileUploader from "@/components/FileUploader";
 
 const Upload = () => {
   const [, setLocation] = useLocation();
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; name: string; size: number; type: string }>>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; name: string; size: number; type: string; pages: number }>>([]);
   const [totalPageCount, setTotalPageCount] = useState(0);
 
-  const handleFilesUploaded = (files: Array<{ key: string; name: string; size: number; type: string }>) => {
+  const handleFilesUploaded = (files: Array<{ key: string; name: string; size: number; type: string; pages: number }>) => {
     setUploadedFiles(files);
-    // Calculate total pages for pricing (simplified - each file counts as 1 page)
-    const totalPages = files.length;
+    // Calculate total pages from all uploaded files
+    const totalPages = files.reduce((sum, file) => sum + file.pages, 0);
     setTotalPageCount(totalPages);
     
     // Automatically proceed to print settings when files are uploaded
@@ -26,7 +26,7 @@ const Upload = () => {
         size: file.size,
         type: file.type,
         key: file.key,
-        pages: 1 // Default page count for uploaded files
+        pages: file.pages
       }));
       
       localStorage.setItem('uploadedFiles', JSON.stringify(fileData));
