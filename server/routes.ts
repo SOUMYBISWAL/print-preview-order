@@ -16,17 +16,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("Headers:", req.headers);
     
     try {
+      console.log("Validating order data:", req.body);
       const orderData = insertOrderSchema.parse(req.body);
+      console.log("Order data validated successfully:", orderData);
       const order = await storage.createOrder(orderData);
       console.log("Order created successfully:", order);
       res.json({ success: true, order });
     } catch (error) {
       console.error("Error creating order:", error);
+      console.error("Error details:", error instanceof Error ? error.message : error);
       if (error instanceof z.ZodError) {
         console.error("Validation errors:", error.errors);
         res.status(400).json({ error: "Invalid order data", details: error.errors });
       } else {
-        res.status(500).json({ error: "Failed to create order" });
+        res.status(500).json({ error: "Failed to create order", message: error instanceof Error ? error.message : "Unknown error" });
       }
     }
   });

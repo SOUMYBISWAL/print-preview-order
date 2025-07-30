@@ -1,4 +1,4 @@
-import { users, orders, type User, type InsertUser, type Order, type InsertOrder, type UpdateOrder } from "@shared/schema";
+import { users, orders, type User, type InsertUser, type Order, type InsertOrder, type UpdateOrder } from "../shared/schema.js";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -87,7 +87,7 @@ export class DatabaseStorage implements IStorage {
   async deleteOrder(id: number): Promise<boolean> {
     if (!db) throw new Error("Database not initialized");
     const result = await db.delete(orders).where(eq(orders.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 }
 
