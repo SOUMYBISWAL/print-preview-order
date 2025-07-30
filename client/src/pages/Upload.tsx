@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,30 +17,30 @@ const Upload = () => {
     // Calculate total pages for pricing (simplified - each file counts as 1 page)
     const totalPages = files.length;
     setTotalPageCount(totalPages);
-  };
-
-  const handleProceedToPrint = () => {
-    if (uploadedFiles.length === 0) {
-      toast.error("Please upload at least one file");
-      return;
-    }
-
-    // Store file information in localStorage for the print settings page
-    const fileData = uploadedFiles.map(file => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      key: file.key,
-      pages: 1 // Default page count for uploaded files
-    }));
     
-    localStorage.setItem('uploadedFiles', JSON.stringify(fileData));
-    localStorage.setItem('totalPages', totalPageCount.toString());
+    // Automatically proceed to print settings when files are uploaded
+    if (files.length > 0) {
+      // Store file information in localStorage for the print settings page
+      const fileData = files.map(file => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        key: file.key,
+        pages: 1 // Default page count for uploaded files
+      }));
+      
+      localStorage.setItem('uploadedFiles', JSON.stringify(fileData));
+      localStorage.setItem('totalPages', totalPages.toString());
 
-    // Navigate to print settings
-    toast.success("Files ready for printing");
-    setLocation("/print-settings");
+      // Navigate to print settings automatically
+      toast.success("Files uploaded successfully! Redirecting to print settings...");
+      setTimeout(() => {
+        setLocation("/print-settings");
+      }, 1000); // Small delay to show the success message
+    }
   };
+
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -69,27 +69,23 @@ const Upload = () => {
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-medium">Uploaded Files ({uploadedFiles.length})</h3>
                   <div className="text-lg font-bold text-green-600">
-                    Ready to Print! (Total Pages: {totalPageCount})
+                    Preparing print settings... (Total Pages: {totalPageCount})
                   </div>
                 </div>
                 
-                <Button 
-                  className="w-full"
-                  onClick={handleProceedToPrint}
-                  size="lg"
-                >
-                  Configure Print Settings & Continue
-                </Button>
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full animate-pulse"></div>
+                </div>
+                <p className="text-center text-sm text-gray-600 mt-2">
+                  Redirecting to print settings...
+                </p>
               </CardContent>
             </Card>
           )}
           
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-center mt-8">
             <Button variant="outline" onClick={() => setLocation("/")}>
               Cancel
-            </Button>
-            <Button onClick={handleProceedToPrint} disabled={uploadedFiles.length === 0}>
-              Continue to Print Settings
             </Button>
           </div>
         </div>
