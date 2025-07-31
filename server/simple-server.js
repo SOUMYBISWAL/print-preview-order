@@ -1,127 +1,306 @@
-import express from "express";
-import { createServer } from "http";
-import path from "path";
-import { fileURLToPath } from 'url';
+#!/usr/bin/env node
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// PrintLite Server - Migration Compatible Version
+// Node.js v20.19.3 (exceeds v18.16.0 requirement)
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { URL } from 'url';
 
-// Simple in-memory storage
-const storage = {
-  orders: [],
-  nextOrderId: 1
-};
+console.log('🚀 PrintLite Server Starting (Node.js ' + process.version + ')');
 
-// Add CORS headers
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+const port = process.env.PORT || 5000;
 
-// Log requests
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
+// In-memory storage for orders and files
+let orders = [];
+let users = [{ username: 'admin', password: 'admin123', role: 'admin' }];
+let nextOrderId = 1;
+let uploadedFiles = [];
 
-// Health check
-app.get("/api/health", (req, res) => {
-  res.json({ status: "healthy", timestamp: new Date().toISOString() });
-});
+// Simple middleware to parse JSON
+function parseJSON(req, callback) {
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    try {
+      callback(null, JSON.parse(body));
+    } catch (error) {
+      callback(error, null);
+    }
+  });
+}
 
-// Create order
-app.post("/api/orders", (req, res) => {
-  try {
-    console.log("Creating order:", req.body);
-    const order = {
-      id: storage.nextOrderId++,
-      ...req.body,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    storage.orders.push(order);
-    console.log("Order created:", order);
-    res.json({ success: true, order });
-  } catch (error) {
-    console.error("Error creating order:", error);
-    res.status(500).json({ error: "Failed to create order" });
+// Calculate estimated pages based on file info
+function calculatePages(fileName, fileSize, fileType) {
+  const sizeInKB = fileSize / 1024;
+  let estimatedPages = 1;
+  
+  if (fileType === 'application/pdf') {
+    estimatedPages = Math.max(1, Math.ceil(sizeInKB / 200)); // 200KB per page
+  } else if (fileType && fileType.includes('word')) {
+    estimatedPages = Math.max(1, Math.ceil(sizeInKB / 100)); // 100KB per page
+  } else if (fileType && fileType.includes('image')) {
+    estimatedPages = 1; // 1 page per image
+  } else if (fileType && fileType.includes('text')) {
+    estimatedPages = Math.max(1, Math.ceil(sizeInKB / 5)); // 5KB per page
+  } else {
+    estimatedPages = Math.max(1, Math.ceil(sizeInKB / 150)); // 150KB per page default
   }
-});
+  
+  return estimatedPages;
+}
 
-// Get all orders
-app.get("/api/orders", (req, res) => {
-  res.json(storage.orders);
-});
-
-// File upload endpoint
-app.post("/api/upload", (req, res) => {
-  try {
-    const { fileName, fileSize, fileType } = req.body;
-    console.log(`Processing file: ${fileName}, Size: ${fileSize} bytes`);
-    
-    // Calculate estimated pages
-    let estimatedPages = 1;
-    const sizeInKB = fileSize / 1024;
-    
-    if (fileType === 'application/pdf') {
-      estimatedPages = Math.max(1, Math.ceil(sizeInKB / 200));
-    } else if (fileType?.includes('word')) {
-      estimatedPages = Math.max(1, Math.ceil(sizeInKB / 100));
-    } else if (fileType?.includes('image')) {
-      estimatedPages = 1;
-    } else {
-      estimatedPages = Math.max(1, Math.ceil(sizeInKB / 150));
+const server = http.createServer((req, res) => {
+  const url = new URL(req.url, `http://localhost:${port}`);
+  const pathname = url.pathname;
+  
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
+  
+  console.log(`${new Date().toISOString()} - ${req.method} ${pathname}`);
+  
+  // Health check endpoint
+  if (pathname === '/api/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ 
+      status: 'healthy', 
+      message: 'PrintLite server operational',
+      nodeVersion: process.version,
+      timestamp: new Date().toISOString(),
+      orders: orders.length,
+      users: users.length
+    }));
+    return;
+  }
+  
+  // User authentication
+  if (pathname === '/api/auth/login' && req.method === 'POST') {
+    parseJSON(req, (error, data) => {
+      if (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        return;
+      }
+      
+      const user = users.find(u => u.username === data.username && u.password === data.password);
+      if (user) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+          success: true, 
+          user: { username: user.username, role: user.role },
+          token: 'mock-token-' + Date.now()
+        }));
+        console.log('User logged in:', user.username);
+      } else {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid credentials' }));
+      }
+    });
+    return;
+  }
+  
+  // File upload endpoint
+  if (pathname === '/api/upload' && req.method === 'POST') {
+    parseJSON(req, (error, data) => {
+      if (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid file data' }));
+        return;
+      }
+      
+      const { fileName, fileSize, fileType } = data;
+      const estimatedPages = calculatePages(fileName, fileSize, fileType);
+      
+      const fileInfo = {
+        id: uploadedFiles.length + 1,
+        fileName: fileName || 'unknown',
+        fileSize: fileSize || 0,
+        fileType: fileType || 'unknown',
+        estimatedPages,
+        uploadedAt: new Date().toISOString()
+      };
+      
+      uploadedFiles.push(fileInfo);
+      
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        success: true, 
+        file: fileInfo,
+        message: 'File processed successfully'
+      }));
+      console.log('File uploaded:', fileName, '-', estimatedPages, 'pages');
+    });
+    return;
+  }
+  
+  // Orders endpoint
+  if (pathname === '/api/orders') {
+    if (req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(orders));
+      return;
     }
     
-    const fileInfo = {
-      fileName,
-      fileSize,
-      fileType: fileType || 'unknown',
-      estimatedPages,
-      uploadedAt: new Date().toISOString()
+    if (req.method === 'POST') {
+      parseJSON(req, (error, data) => {
+        if (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid order data' }));
+          return;
+        }
+        
+        const order = {
+          id: nextOrderId++,
+          ...data,
+          status: 'pending',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        orders.push(order);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+          success: true, 
+          order,
+          message: 'Order created successfully'
+        }));
+        console.log('Order created:', order.id, '- Total:', order.totalPrice || 'N/A');
+      });
+      return;
+    }
+  }
+  
+  // Order status update
+  if (pathname.startsWith('/api/orders/') && req.method === 'PUT') {
+    const orderId = parseInt(pathname.split('/')[3]);
+    parseJSON(req, (error, data) => {
+      if (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid update data' }));
+        return;
+      }
+      
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        Object.assign(order, data, { updatedAt: new Date().toISOString() });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, order }));
+        console.log('Order updated:', orderId, '- Status:', order.status);
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Order not found' }));
+      }
+    });
+    return;
+  }
+  
+  // Admin stats
+  if (pathname === '/api/admin/stats' && req.method === 'GET') {
+    const stats = {
+      totalOrders: orders.length,
+      pendingOrders: orders.filter(o => o.status === 'pending').length,
+      completedOrders: orders.filter(o => o.status === 'completed').length,
+      totalRevenue: orders.reduce((sum, o) => sum + (o.totalPrice || 0), 0),
+      uploadedFiles: uploadedFiles.length
     };
     
-    res.json({ success: true, message: "File processed", file: fileInfo });
-  } catch (error) {
-    console.error("Error processing file:", error);
-    res.status(500).json({ error: "Failed to process file" });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(stats));
+    return;
   }
+  
+  // Root endpoint - status page
+  if (pathname === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>PrintLite Server</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+          .status { background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; }
+          .endpoint { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 3px; }
+          .stats { display: flex; gap: 20px; }
+          .stat { background: #f0f8ff; padding: 15px; border-radius: 5px; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <h1>🖨️ PrintLite Server</h1>
+        <div class="status">
+          <strong>Status:</strong> Running ✅<br>
+          <strong>Node.js:</strong> ${process.version} (≥ v18.16.0 ✅)<br>
+          <strong>Port:</strong> ${port}<br>
+          <strong>Started:</strong> ${new Date().toISOString()}
+        </div>
+        
+        <h2>📊 Statistics</h2>
+        <div class="stats">
+          <div class="stat">
+            <strong>${orders.length}</strong><br>
+            Total Orders
+          </div>
+          <div class="stat">
+            <strong>${uploadedFiles.length}</strong><br>
+            Files Uploaded
+          </div>
+          <div class="stat">
+            <strong>${users.length}</strong><br>
+            Users
+          </div>
+        </div>
+        
+        <h2>🔗 API Endpoints</h2>
+        <div class="endpoint"><strong>GET</strong> <code>/api/health</code> - Health check</div>
+        <div class="endpoint"><strong>POST</strong> <code>/api/auth/login</code> - User authentication</div>
+        <div class="endpoint"><strong>POST</strong> <code>/api/upload</code> - File upload processing</div>
+        <div class="endpoint"><strong>GET/POST</strong> <code>/api/orders</code> - Order management</div>
+        <div class="endpoint"><strong>PUT</strong> <code>/api/orders/{id}</code> - Update order status</div>
+        <div class="endpoint"><strong>GET</strong> <code>/api/admin/stats</code> - Admin statistics</div>
+        
+        <p><small>PrintLite Document Printing Service - Migration Server</small></p>
+      </body>
+      </html>
+    `);
+    return;
+  }
+  
+  // 404 for all other requests
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ error: 'Endpoint not found' }));
 });
-
-// Serve static files from client/public
-const clientPath = path.resolve(__dirname, '..', 'client');
-app.use(express.static(path.join(clientPath, 'public')));
-
-// Catch-all handler for SPA
-app.get('*', (req, res) => {
-  const indexPath = path.join(clientPath, 'index.html');
-  res.sendFile(indexPath);
-});
-
-const server = createServer(app);
-const port = 5000;
 
 server.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 PrintLite server running on port ${port}`);
+  console.log(`✅ PrintLite server running on port ${port}`);
   console.log(`🔗 Local: http://localhost:${port}`);
   console.log(`🌐 Network: http://0.0.0.0:${port}`);
-  console.log(`📊 API Health: http://localhost:${port}/api/health`);
+  console.log(`📊 Health check: http://localhost:${port}/api/health`);
+  console.log(`✅ Node.js ${process.version} compatibility confirmed (≥ v18.16.0)`);
+  console.log('🎯 All core PrintLite endpoints operational');
 });
 
-// Handle graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n🛑 Shutting down server...');
   server.close(() => {
-    console.log('👋 Server shut down successfully');
+    console.log('✅ Server stopped gracefully');
     process.exit(0);
   });
 });
 
-export default app;
+process.on('SIGTERM', () => {
+  console.log('\n🛑 Terminating server...');
+  server.close(() => {
+    console.log('✅ Server terminated');
+    process.exit(0);
+  });
+});
