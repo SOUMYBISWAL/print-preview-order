@@ -3,16 +3,17 @@ frontend:
   phases:
     preBuild:
       commands:
-        - nvm install 20.11.0
-        - nvm use 20.11.0
+        - nvm install 20.19.0
+        - nvm use 20.19.0
         - node --version
         - npm --version
-        - npm install --legacy-peer-deps --no-audit
+        - npm ci --force --no-audit
+        - npm list || true
     build:
       commands:
-        - npm run build
+        - node build-frontend.js
   artifacts:
-    baseDirectory: dist/public
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
