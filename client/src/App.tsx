@@ -24,6 +24,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 import Pricing from "./pages/Pricing";
 import AuthChoice from "./pages/AuthChoice";
 import AmplifyAuthPage from "./pages/AmplifyAuthPage";
+import AmplifyTestPage from "./pages/AmplifyTestPage";
 
 
 
@@ -52,6 +53,7 @@ const App = () => (
         <Route path="/pricing" component={Pricing} />
         <Route path="/auth-choice" component={AuthChoice} />
         <Route path="/amplify-auth" component={AmplifyAuthPage} />
+        <Route path="/amplify-test" component={AmplifyTestPage} />
         <Route component={NotFound} />
       </Switch>
     </TooltipProvider>

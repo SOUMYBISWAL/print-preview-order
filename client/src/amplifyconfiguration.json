@@ -1,9 +1,9 @@
 {
   "aws_project_region": "us-east-1",
-  "aws_cognito_identity_pool_id": "us-east-1:XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "aws_cognito_identity_pool_id": "us-east-1:placeholder-identity-pool",
   "aws_cognito_region": "us-east-1",
-  "aws_user_pools_id": "us-east-1_XXXXXXXXX",
-  "aws_user_pools_web_client_id": "XXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "aws_user_pools_id": "us-east-1_placeholder",
+  "aws_user_pools_web_client_id": "placeholder-client-id",
   "oauth": {},
   "aws_cognito_username_attributes": ["EMAIL"],
   "aws_cognito_social_providers": [],
@@ -15,6 +15,6 @@
     "passwordPolicyCharacters": []
   },
   "aws_cognito_verification_mechanisms": ["EMAIL"],
-  "aws_user_files_s3_bucket": "printlitestorage-XXXXXXXXXXXXXX-dev",
+  "aws_user_files_s3_bucket": "printlitestorage-placeholder-dev",
   "aws_user_files_s3_bucket_region": "us-east-1"
 }

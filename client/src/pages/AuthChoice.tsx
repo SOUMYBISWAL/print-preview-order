@@ -1,4 +1,4 @@
-import React from "react";
+// AuthChoice page for selecting authentication method
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,11 +99,18 @@ const AuthChoice = () => {
                   <p className="text-xs text-gray-500 mb-4">
                     Requires AWS credentials configuration. Best for production deployment.
                   </p>
-                  <Link href="/amplify-auth">
-                    <Button variant="outline" className="w-full" data-testid="button-amplify-auth">
-                      Continue with AWS Amplify
-                    </Button>
-                  </Link>
+                  <div className="space-y-2">
+                    <Link href="/amplify-auth">
+                      <Button variant="outline" className="w-full" data-testid="button-amplify-auth">
+                        Continue with AWS Amplify
+                      </Button>
+                    </Link>
+                    <Link href="/amplify-test">
+                      <Button variant="secondary" size="sm" className="w-full" data-testid="button-amplify-test">
+                        Test AWS Connection
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </CardContent>
             </Card>
