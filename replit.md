@@ -128,8 +128,10 @@ The architecture supports hybrid deployment:
 **AWS Amplify Deployment Configuration Fixed:**
 - ✓ Fixed Node.js version installation issue in amplify.yml
 - ✓ Added 'nvm install 20.11.0' before 'nvm use 20.11.0' command
-- ✓ Build configuration now properly installs required Node.js version
-- ✓ AWS Amplify deployment should now work without Node.js version errors
+- ✓ Fixed 404 Not Found error by correcting baseDirectory from 'dist' to 'dist/public'
+- ✓ Verified SPA routing configuration with proper _redirects file
+- ✓ Build process outputs correctly to dist/public/ with all required assets
+- ✓ AWS Amplify deployment should now work without errors
 
 **Migration to Replit Environment Completed:**
 - ✓ Successfully migrated PrintLite project to Replit environment

@@ -12,7 +12,7 @@ frontend:
       commands:
         - npm run build
   artifacts:
-    baseDirectory: dist
+    baseDirectory: dist/public
     files:
       - '**/*'
   cache:
@@ -25,3 +25,5 @@ frontend:
           value: 'DENY'
         - key: 'X-XSS-Protection'
           value: '1; mode=block'
+        - key: 'X-Content-Type-Options'
+          value: 'nosniff'

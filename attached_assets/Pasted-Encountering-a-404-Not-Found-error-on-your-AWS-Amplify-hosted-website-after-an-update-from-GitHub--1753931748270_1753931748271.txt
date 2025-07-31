@@ -1,0 +1,89 @@
+Encountering a "404 Not Found" error on your AWS Amplify-hosted website after an update from GitHub can be frustrating, but it's a common issue with several identifiable causes. This error typically points to a misconfiguration in your build settings or routing rules. Here’s a breakdown of the most frequent reasons and how to resolve them.
+
+Incorrect Build Settings
+One of the most common culprits for a 404 error is an incorrect build output directory specified in your amplify.yml file. When AWS Amplify builds your site, it needs to know where the final static files (like index.html, CSS, and JavaScript files) are located. If this path is wrong, Amplify won't be able to find and serve your site's entry point.
+
+Solution:
+
+Verify the baseDirectory in your amplify.yml file. The correct directory depends on the framework you are using:
+
+Create React App: build
+
+Next.js: .next
+
+Vue.js: dist
+
+Angular: dist/<your-project-name>
+
+Vite: dist
+
+Here's an example of a basic amplify.yml for a React app:
+
+YAML
+
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+Make sure the baseDirectory points to the correct build output folder for your specific project.
+
+Rewrite Rules for Single Page Applications (SPAs)
+If you are developing a Single Page Application (SPA) with a framework like React, Angular, or Vue, you are likely using client-side routing. This means that navigating to a specific path like /about or /contact is handled by your application's JavaScript code, not by requesting a separate HTML file from the server for each page.
+
+When a user directly accesses or refreshes a page at a specific route (e.g., https://your-app.com/about), the request goes to the AWS Amplify server. If there's no specific file at that path, a 404 error will occur.
+
+Solution:
+
+You need to configure a rewrite rule in the AWS Amplify console to redirect all requests to your index.html file. This allows your SPA to take over the routing.
+
+In the AWS Amplify console, go to App settings > Rewrites and redirects.
+
+Click Edit.
+
+Add a new rule with the following settings:
+
+Source address: </^[^.]+$|\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>
+
+Target address: /index.html
+
+Type: 200 (Rewrite)
+
+Save the changes.
+
+This regular expression ensures that any request that is not for a static file (like a CSS or JS file) is rewritten to index.html.
+
+Framework-Specific Configurations
+Some frameworks, especially those with Server-Side Rendering (SSR) capabilities like Next.js, require specific platform settings in AWS Amplify to function correctly.
+
+Solution:
+
+For Next.js applications, ensure that the platform in your Amplify app settings is correctly identified. For newer versions of Next.js that use SSR features, you may need to set the platform to Web Compute.
+
+In the AWS Amplify console, go to App settings > General.
+
+Under the "App details" section, check the "Platform".
+
+If you are using Next.js with SSR, ensure it is set to Web Compute. If not, you may need to create a new Amplify app and select the correct platform during setup.
+
+Caching Issues
+Sometimes, the issue can be as simple as a caching problem, either in your browser or at the CDN level.
+
+Solution:
+
+Clear your browser cache: Try a hard refresh (Ctrl+Shift+R or Cmd+Shift+R) or clear your browser's cache and cookies.
+
+Invalidate CloudFront cache: AWS Amplify uses Amazon CloudFront as its content delivery network (CDN). You can manually invalidate the cache in the CloudFront console, although this is usually handled automatically by Amplify on new deployments.
+
+By systematically checking these common areas, you can identify and resolve the "404 Not Found" error and ensure your updated website is successfully deployed and accessible.
