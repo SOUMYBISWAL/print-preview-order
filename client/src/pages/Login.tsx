@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { LogIn, UserPlus, Phone } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useAmplifyAuth } from "@/hooks/useAmplifyAuth";
 
 const Login = () => {
   const [, setLocation] = useLocation();
