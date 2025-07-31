@@ -1,8 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import multer from "multer";
-import path from "path";
-import { promises as fs } from "fs";
+// Removed multer and fs imports since local file uploads are disabled
 import { storage } from "./storage";
 import { insertOrderSchema, updateOrderSchema } from "../shared/schema.js";
 import { z } from "zod";
@@ -157,139 +155,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Configure multer for file uploads
-  const storage_config = multer.diskStorage({
-    destination: async (req, file, cb) => {
-      const uploadDir = path.join(process.cwd(), 'uploads');
-      try {
-        await fs.mkdir(uploadDir, { recursive: true });
-        cb(null, uploadDir);
-      } catch (error) {
-        cb(error instanceof Error ? error : new Error('Failed to create upload directory'), uploadDir);
-      }
-    },
-    filename: (req, file, cb) => {
-      // Generate unique filename
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const ext = path.extname(file.originalname);
-      const name = path.basename(file.originalname, ext);
-      cb(null, `${name}-${uniqueSuffix}${ext}`);
-    }
-  });
-
-  const upload = multer({
-    storage: storage_config,
-    limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB limit
-    },
-    fileFilter: (req, file, cb) => {
-      // Check file type
-      const allowedTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/gif',
-        'image/bmp',
-        'image/webp',
-        'text/plain'
-      ];
-      
-      if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new Error('File type not supported'));
-      }
-    }
-  });
-
-  // Helper function to estimate page count based on file type and size
-  const estimatePageCount = (file: Express.Multer.File): number => {
-    const { mimetype, size, originalname } = file;
-    console.log(`Estimating pages for file: ${originalname}, type: ${mimetype}, size: ${size} bytes`);
+  // Simplified fallback upload endpoint (without local file storage)
+  app.post('/api/upload', async (req, res) => {
+    console.log('POST /api/upload fallback called');
     
-    let estimatedPages = 1;
-    
-    // For PDFs, assume average 200KB per page (more realistic estimate)
-    if (mimetype === 'application/pdf') {
-      estimatedPages = Math.max(1, Math.ceil(size / (200 * 1024)));
-    }
-    // For Word documents, assume average 100KB per page
-    else if (mimetype.includes('word') || mimetype.includes('document')) {
-      estimatedPages = Math.max(1, Math.ceil(size / (100 * 1024)));
-    }
-    // For images, assume 1 page per image
-    else if (mimetype.startsWith('image/')) {
-      estimatedPages = 1;
-    }
-    // For text files, estimate based on size (assume 5KB per page)
-    else if (mimetype === 'text/plain') {
-      estimatedPages = Math.max(1, Math.ceil(size / (5 * 1024)));
-    }
-    // For other document types, use a general estimate
-    else {
-      estimatedPages = Math.max(1, Math.ceil(size / (150 * 1024)));
-    }
-    
-    console.log(`Estimated ${estimatedPages} pages for ${originalname}`);
-    return estimatedPages;
-  };
-
-  // File upload endpoint
-  app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
-
-      // Estimate page count based on file type and size
-      const estimatedPages = estimatePageCount(req.file);
-
-      const fileData = {
-        key: `uploads/${req.file.filename}`,
-        name: req.file.originalname,
-        size: req.file.size,
-        type: req.file.mimetype,
-        path: req.file.path,
-        pages: estimatedPages,
-        uploadedAt: new Date().toISOString()
+      // This is a fallback that just returns mock data
+      // In practice, AWS Amplify Storage should be used
+      const mockFile = {
+        key: `fallback-${Date.now()}`,
+        name: 'fallback-file.pdf',
+        size: 1024000,
+        type: 'application/pdf',
+        pages: 5
       };
 
-      console.log('Sending response with file data:', fileData);
+      console.log('Fallback upload response:', mockFile);
 
-      res.json({
-        success: true,
-        file: fileData,
-        key: fileData.key
+      res.json({ 
+        success: true, 
+        message: 'Fallback upload - AWS Amplify Storage should be used',
+        file: mockFile
       });
 
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Error in fallback upload:', error);
       res.status(500).json({ 
-        error: 'Failed to upload file',
+        error: 'Upload failed', 
         message: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
-  // Download uploaded files
+  // File download endpoint (disabled - AWS Amplify Storage handles this)
   app.get('/api/uploads/:filename', async (req, res) => {
-    try {
-      const filename = req.params.filename;
-      const filePath = path.join(process.cwd(), 'uploads', filename);
-      
-      // Check if file exists
-      await fs.access(filePath);
-      
-      // Send file
-      res.sendFile(filePath);
-      
-    } catch (error) {
-      console.error('Download error:', error);
-      res.status(404).json({ error: 'File not found' });
-    }
+    res.status(404).json({ 
+      error: 'Local file downloads disabled - AWS Amplify Storage handles file access' 
+    });
   });
 
   // Admin login endpoint

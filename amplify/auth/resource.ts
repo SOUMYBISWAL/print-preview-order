@@ -1,12 +1,17 @@
-// AWS Amplify Gen 2 Authentication Configuration
-export const auth = {
+import { defineAuth } from '@aws-amplify/backend';
+
+export const auth = defineAuth({
   loginWith: {
     email: true,
   },
-  groups: ['ADMIN', 'USER'],
-  signUpAttributes: ['email'],
   userAttributes: {
-    email: { required: true, mutable: true },
-    name: { required: false, mutable: true },
+    email: {
+      required: true,
+      mutable: true,
+    },
+    name: {
+      required: false,
+      mutable: true,
+    },
   },
-};
+});

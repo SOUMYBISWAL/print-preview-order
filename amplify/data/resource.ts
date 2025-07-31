@@ -1,56 +1,55 @@
-// AWS Amplify Gen 2 Data Configuration (GraphQL API)
-export const data = {
-  schema: {
-    Order: {
-      fields: {
-        id: { type: 'ID', key: 'primary' },
-        customerName: { type: 'String', required: true },
-        email: { type: 'String', required: true },
-        phone: { type: 'String', required: true },
-        totalAmount: { type: 'Float', required: true },
-        status: { type: 'String', required: true },
-        totalPages: { type: 'Int', required: true },
-        printType: { type: 'String', required: true },
-        paperSize: { type: 'String', required: true },
-        paperType: { type: 'String', required: true },
-        sides: { type: 'String', required: true },
-        binding: { type: 'String' },
-        copies: { type: 'Int', required: true },
-        deliveryAddress: { type: 'String', required: true },
-        paymentMethod: { type: 'String', required: true },
-        paymentStatus: { type: 'String', required: true },
-        fileNames: { type: '[String]', required: true },
-        specialInstructions: { type: 'String' },
-        createdAt: { type: 'AWSDateTime' },
-        updatedAt: { type: 'AWSDateTime' },
-      },
-      authorization: [
-        { type: 'guest', operations: ['create', 'read'] },
-        { type: 'group', group: 'ADMIN', operations: ['create', 'read', 'update', 'delete'] },
-      ]
-    },
-    PrintSettings: {
-      fields: {
-        id: { type: 'ID', key: 'primary' },
-        paperType: { type: 'String', required: true },
-        color: { type: 'String', required: true },
-        sides: { type: 'String', required: true },
-        binding: { type: 'String' },
-        copies: { type: 'Int', required: true },
-        pricePerPage: { type: 'Float', required: true },
-        createdAt: { type: 'AWSDateTime' },
-        updatedAt: { type: 'AWSDateTime' },
-      },
-      authorization: [
-        { type: 'guest', operations: ['read'] },
-        { type: 'group', group: 'ADMIN', operations: ['create', 'read', 'update', 'delete'] },
-      ]
-    }
-  },
+import { a, defineData, type ClientSchema } from '@aws-amplify/backend';
+
+const schema = a.schema({
+  Order: a.model({
+    id: a.id(),
+    userId: a.string(),
+    guestEmail: a.string().optional(),
+    fileName: a.string().required(),
+    fileUrl: a.string().required(),
+    pages: a.integer().required(),
+    paperType: a.string().required(),
+    colorType: a.string().required(),
+    printSides: a.string().required(),
+    bindingType: a.string().required(),
+    copies: a.integer().required(),
+    totalPrice: a.float().required(),
+    status: a.string().required(),
+    deliveryAddress: a.string().required(),
+    phone: a.string().required(),
+    createdAt: a.datetime(),
+    updatedAt: a.datetime(),
+  }).authorization(allow => [
+    allow.authenticated(),
+    allow.guest().to(['create', 'read'])
+  ]),
+  
+  PrintSettings: a.model({
+    id: a.id(),
+    fileName: a.string().required(),
+    fileUrl: a.string().required(),
+    pages: a.integer().required(),
+    paperType: a.string().required(),
+    colorType: a.string().required(),
+    printSides: a.string().required(),
+    bindingType: a.string().required(),
+    copies: a.integer().required(),
+    totalPrice: a.float().required(),
+    createdAt: a.datetime(),
+  }).authorization(allow => [
+    allow.authenticated(),
+    allow.guest().to(['create', 'read', 'update', 'delete'])
+  ])
+});
+
+export type Schema = ClientSchema<typeof schema>;
+
+export const data = defineData({
+  schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'userPool',
+    defaultAuthorizationMode: 'apiKey',
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
     },
   },
-};
+});

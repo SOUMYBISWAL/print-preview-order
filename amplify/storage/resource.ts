@@ -1,14 +1,15 @@
-// AWS Amplify Gen 2 Storage Configuration (S3)
-export const storage = {
+import { defineStorage } from '@aws-amplify/backend';
+
+export const storage = defineStorage({
   name: 'printliteStorage',
-  access: {
+  access: (allow) => ({
     'uploads/*': [
-      { type: 'guest', operations: ['read', 'write'] },
-      { type: 'authenticated', operations: ['read', 'write', 'delete'] },
+      allow.guest.to(['read', 'write']),
+      allow.authenticated.to(['read', 'write', 'delete'])
     ],
     'public/*': [
-      { type: 'guest', operations: ['read'] },
-      { type: 'authenticated', operations: ['read', 'write', 'delete'] },
-    ],
-  },
-};
+      allow.guest.to(['read']),
+      allow.authenticated.to(['read', 'write', 'delete'])
+    ]
+  })
+});
