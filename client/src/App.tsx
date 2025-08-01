@@ -25,6 +25,7 @@ import Pricing from "./pages/Pricing";
 import AuthChoice from "./pages/AuthChoice";
 import AmplifyAuthPage from "./pages/AmplifyAuthPage";
 import AmplifyTestPage from "./pages/AmplifyTestPage";
+import AmplifyUploadTest from "./pages/AmplifyUploadTest";
 
 
 
@@ -54,6 +55,7 @@ const App = () => (
         <Route path="/auth-choice" component={AuthChoice} />
         <Route path="/amplify-auth" component={AmplifyAuthPage} />
         <Route path="/amplify-test" component={AmplifyTestPage} />
+        <Route path="/amplify-upload-test" component={AmplifyUploadTest} />
         <Route component={NotFound} />
       </Switch>
     </TooltipProvider>
