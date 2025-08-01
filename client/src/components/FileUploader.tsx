@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Image, File, X, Check, Upload as UploadIcon } from 'lucide-react';
 import { toast } from "sonner";
-import { uploadFileToS3, calculatePages, type FileUploadResult } from "@/lib/amplify-storage";
+// File upload functionality using backend API
 
 interface FileUploaderProps {
   onFilesUploaded: (files: Array<{ key: string; name: string; size: number; type: string; pages: number }>) => void;
@@ -74,54 +74,54 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     return null;
   };
 
+  const calculatePages = (file: File): number => {
+    const fileType = file.type;
+    const fileSize = file.size;
+
+    // Estimate pages based on file type and size
+    if (fileType === 'application/pdf') {
+      // PDFs: approximately 200KB per page
+      return Math.max(1, Math.ceil(fileSize / (200 * 1024)));
+    } else if (fileType.includes('word') || fileType.includes('document')) {
+      // Word documents: approximately 100KB per page
+      return Math.max(1, Math.ceil(fileSize / (100 * 1024)));
+    } else if (fileType.startsWith('image/')) {
+      // Images: 1 page per file
+      return 1;
+    } else if (fileType === 'text/plain') {
+      // Text files: approximately 5KB per page
+      return Math.max(1, Math.ceil(fileSize / (5 * 1024)));
+    } else {
+      // Other documents: approximately 150KB per page
+      return Math.max(1, Math.ceil(fileSize / (150 * 1024)));
+    }
+  };
+
   const uploadFile = async (file: File): Promise<{ key: string; pages: number }> => {
-    // Use AWS Amplify Storage for file upload
     try {
-      const result: FileUploadResult = await uploadFileToS3(file, 'uploads');
+      const formData = new FormData();
+      formData.append('file', file);
       
-      if (!result.success) {
-        throw new Error(result.error || 'Upload failed');
-      }
-      
-      const pages = calculatePages(file);
-      
-      console.log('AWS S3 upload successful:', {
-        fileName: result.fileName,
-        fileUrl: result.fileUrl,
-        pages
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
       });
       
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Upload failed');
+      }
+      
+      const result = await response.json();
+      console.log('File upload successful:', result);
+      
       return { 
-        key: result.fileName || file.name,
-        pages
+        key: result.file?.key || result.key || file.name,
+        pages: result.file?.pages || calculatePages(file)
       };
     } catch (error) {
-      console.error('AWS S3 upload error:', error);
-      // Fallback to local upload if AWS fails
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || 'Local upload failed');
-        }
-        
-        const result = await response.json();
-        console.log('Fallback local upload response:', result);
-        return { 
-          key: result.file.key || result.key,
-          pages: calculatePages(file)
-        };
-      } catch (fallbackError) {
-        console.error('Fallback upload error:', fallbackError);
-        throw new Error('Both AWS and local upload failed');
-      }
+      console.error('Upload error:', error);
+      throw error;
     }
   };
 

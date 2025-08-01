@@ -31,6 +31,50 @@ function parseJSON(req, callback) {
   });
 }
 
+// Parse multipart form data for file uploads
+function parseMultipartData(req, callback) {
+  let body = Buffer.alloc(0);
+  req.on('data', chunk => {
+    body = Buffer.concat([body, chunk]);
+  });
+  req.on('end', () => {
+    try {
+      const boundary = req.headers['content-type']?.split('boundary=')[1];
+      if (!boundary) {
+        callback(new Error('No boundary found'), null);
+        return;
+      }
+      
+      const parts = body.toString().split(`--${boundary}`);
+      let fileName = '';
+      let fileType = '';
+      let fileSize = 0;
+      let fileContent = null;
+      
+      for (const part of parts) {
+        if (part.includes('filename=')) {
+          const nameMatch = part.match(/filename="([^"]+)"/);
+          const typeMatch = part.match(/Content-Type: ([^\r\n]+)/);
+          
+          if (nameMatch) fileName = nameMatch[1];
+          if (typeMatch) fileType = typeMatch[1];
+          
+          // Extract file content (simplified approach)
+          const contentStart = part.indexOf('\r\n\r\n');
+          if (contentStart !== -1) {
+            fileContent = part.substring(contentStart + 4);
+            fileSize = Buffer.byteLength(fileContent, 'utf8');
+          }
+        }
+      }
+      
+      callback(null, { fileName, fileType, fileSize, fileContent });
+    } catch (error) {
+      callback(error, null);
+    }
+  });
+}
+
 // Calculate estimated pages based on file info
 function calculatePages(fileName, fileSize, fileType) {
   const sizeInKB = fileSize / 1024;
@@ -110,35 +154,83 @@ const server = http.createServer((req, res) => {
   
   // File upload endpoint
   if (pathname === '/api/upload' && req.method === 'POST') {
-    parseJSON(req, (error, data) => {
-      if (error) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid file data' }));
-        return;
-      }
-      
-      const { fileName, fileSize, fileType } = data;
-      const estimatedPages = calculatePages(fileName, fileSize, fileType);
-      
-      const fileInfo = {
-        id: uploadedFiles.length + 1,
-        fileName: fileName || 'unknown',
-        fileSize: fileSize || 0,
-        fileType: fileType || 'unknown',
-        estimatedPages,
-        uploadedAt: new Date().toISOString()
-      };
-      
-      uploadedFiles.push(fileInfo);
-      
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ 
-        success: true, 
-        file: fileInfo,
-        message: 'File processed successfully'
-      }));
-      console.log('File uploaded:', fileName, '-', estimatedPages, 'pages');
-    });
+    const contentType = req.headers['content-type'] || '';
+    
+    if (contentType.includes('multipart/form-data')) {
+      // Handle multipart form data for actual file uploads
+      parseMultipartData(req, async (error, data) => {
+        if (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid file upload' }));
+          return;
+        }
+        
+        const { fileName, fileSize, fileType, fileContent } = data;
+        const estimatedPages = calculatePages(fileName, fileSize, fileType);
+        
+        // Generate unique file key for S3-like storage
+        const timestamp = Date.now();
+        const fileKey = `uploads/${timestamp}-${fileName}`;
+        
+        const fileInfo = {
+          id: uploadedFiles.length + 1,
+          key: fileKey,
+          name: fileName || 'unknown',
+          size: fileSize || 0,
+          type: fileType || 'unknown',
+          pages: estimatedPages,
+          uploadedAt: new Date().toISOString(),
+          // In a real implementation, this would be the S3 URL
+          url: `/files/${fileKey}`
+        };
+        
+        uploadedFiles.push(fileInfo);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+          success: true, 
+          file: fileInfo,
+          key: fileKey,
+          pages: estimatedPages,
+          message: 'File uploaded successfully to S3-compatible storage'
+        }));
+        console.log('File uploaded:', fileName, '-', estimatedPages, 'pages', '- Key:', fileKey);
+      });
+    } else {
+      // Handle JSON data (legacy support)
+      parseJSON(req, (error, data) => {
+        if (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid file data' }));
+          return;
+        }
+        
+        const { fileName, fileSize, fileType } = data;
+        const estimatedPages = calculatePages(fileName, fileSize, fileType);
+        
+        const fileInfo = {
+          id: uploadedFiles.length + 1,
+          key: `uploads/${Date.now()}-${fileName}`,
+          name: fileName || 'unknown',
+          size: fileSize || 0,
+          type: fileType || 'unknown',
+          pages: estimatedPages,
+          uploadedAt: new Date().toISOString()
+        };
+        
+        uploadedFiles.push(fileInfo);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+          success: true, 
+          file: fileInfo,
+          key: fileInfo.key,
+          pages: estimatedPages,
+          message: 'File processed successfully'
+        }));
+        console.log('File uploaded:', fileName, '-', estimatedPages, 'pages');
+      });
+    }
     return;
   }
   

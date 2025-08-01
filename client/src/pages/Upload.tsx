@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import AmplifyFileUploader from "@/components/AmplifyFileUploader";
+import FileUploader from "@/components/FileUploader";
 
 const Upload = () => {
   const [, setLocation] = useLocation();
@@ -50,8 +50,8 @@ const Upload = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Upload Your Files</h1>
           
-          {/* AWS Amplify S3 File Upload Component */}
-          <AmplifyFileUploader
+          {/* File Upload Component with S3 Integration */}
+          <FileUploader
             onFilesUploaded={handleFilesUploaded}
             maxFileCount={10}
             acceptedFileTypes={[
