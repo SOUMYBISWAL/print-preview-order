@@ -37,14 +37,19 @@ if (!fs.existsSync(amplifyOutputsPath)) {
 
 try {
   console.log('📦 Building frontend with Vite...');
+  
+  // Set build environment variables
+  const buildEnv = {
+    ...process.env,
+    NODE_ENV: 'production',
+    VITE_API_URL: '/api',
+    NODE_OPTIONS: '--max-old-space-size=4096'
+  };
+  
   execSync('npx vite build --target=es2022', { 
     stdio: 'inherit',
     cwd: process.cwd(),
-    env: { 
-      ...process.env, 
-      NODE_ENV: 'production',
-      VITE_API_URL: '/api'
-    }
+    env: buildEnv
   });
   
   console.log('✅ Frontend build completed successfully!');

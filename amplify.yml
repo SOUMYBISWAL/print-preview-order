@@ -7,8 +7,13 @@ frontend:
         - nvm use 20.19.0
         - node --version
         - npm --version
-        - npm ci --force --no-audit
-        - npm list || true
+        - rm -f package-lock.json
+        - npm cache clean --force || true
+        - echo "legacy-peer-deps=true" > .npmrc
+        - echo "audit=false" >> .npmrc
+        - echo "fund=false" >> .npmrc
+        - npm install --legacy-peer-deps --no-audit --no-fund
+        - npm ls --depth=0 || true
     build:
       commands:
         - node build-frontend.js

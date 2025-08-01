@@ -144,6 +144,15 @@ The architecture supports hybrid deployment:
 - All API endpoints functional: /api/health, /api/upload, /api/orders, /api/auth/login
 - In-memory storage operational for orders and user management
 
+**AWS Amplify Deployment Fix (August 1, 2025):**
+- ✅ Identified npm dependency resolution issues in package-lock.json
+- ✅ Updated amplify.yml with legacy-peer-deps configuration
+- ✅ Created .npmrc with audit/fund suppression settings
+- ✅ Enhanced build-frontend.js with memory optimization
+- ✅ Added comprehensive environment variables configuration
+- ✅ Created deployment troubleshooting documentation
+- 📋 Ready for deployment with improved dependency handling
+
 **AWS Amplify Deployment Fixed (July 31, 2025):**
 - ✅ Resolved top-level await compatibility issues in main.tsx
 - ✅ Fixed amplify_outputs.json import path problems  
