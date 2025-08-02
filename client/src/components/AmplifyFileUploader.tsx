@@ -65,11 +65,13 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
     toast.error(`Upload failed: ${error}`);
   };
 
-  const handleUploadStart = (file: { name: string; size: number; type: string; key: string }) => {
-    const pages = calculatePages(new File([], file.name, { type: file.type }));
+  const handleUploadStart = (file: File) => {
+    const pages = calculatePages(file);
+    const timestamp = Date.now();
+    const key = `uploads/${timestamp}-${file.name}`;
     
     const newFile: UploadedFile = {
-      key: file.key,
+      key,
       name: file.name,
       size: file.size,
       type: file.type,
@@ -139,10 +141,30 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
           isResumable
           autoUpload
           showThumbnails
-          onUploadSuccess={handleUploadSuccess}
-          onUploadError={handleUploadError}
-          onUploadStart={handleUploadStart}
-          onUploadProgress={handleUploadProgress}
+          onUploadSuccess={({ key }: { key: string }) => {
+            console.log('Upload successful:', key);
+            setUploadedFiles(prev => prev.map(file => 
+              file.key === key 
+                ? { ...file, status: 'completed' as const, progress: 100 }
+                : file
+            ));
+            setIsUploading(false);
+            toast.success('File uploaded successfully to AWS S3!');
+            processCompletedFiles();
+          }}
+          onUploadError={(error: string) => {
+            console.error('Upload error:', error);
+            toast.error(`Upload failed: ${error}`);
+            setIsUploading(false);
+          }}
+          onUploadStart={({ file }: { file: File }) => handleUploadStart(file)}
+          onUploadProgress={({ progress, key }: { progress: number; key: string }) => {
+            setUploadedFiles(prev => prev.map(f => 
+              f.key === key 
+                ? { ...f, progress: Math.round(progress * 100) }
+                : f
+            ));
+          }}
           components={{
             Container: ({ children, ...props }) => (
               <div 

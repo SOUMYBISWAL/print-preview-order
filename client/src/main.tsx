@@ -16,11 +16,31 @@ async function initializeApp() {
     Amplify.configure(amplifyConfig);
   } catch (error) {
     console.log('Running without Amplify configuration (development mode)');
-    // Use minimal mock config for development
+    // Use comprehensive mock config for development that won't cause undefined errors
     Amplify.configure({
-      Auth: { region: 'us-east-1' },
-      API: { region: 'us-east-1' },
-      Storage: { region: 'us-east-1' }
+      Auth: {
+        Cognito: {
+          region: 'us-east-1',
+          userPoolId: 'us-east-1_mock',
+          userPoolClientId: 'mock_client_id',
+          identityPoolId: 'us-east-1:mock-identity-pool',
+          loginWith: {
+            email: true
+          },
+          signUpVerificationMethod: 'code',
+          userAttributes: {
+            email: {
+              required: true
+            }
+          }
+        }
+      },
+      Storage: {
+        S3: {
+          region: 'us-east-1',
+          bucket: 'mock-storage-bucket'
+        }
+      }
     });
   }
 
