@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { FileText, Image, File, X, Check, AlertCircle, Upload, CloudUpload } from 'lucide-react';
 import { toast } from "sonner";
 import { calculatePages } from "@/lib/amplify-storage";
+import { uploadData } from 'aws-amplify/storage';
 
 interface SimpleAmplifyUploaderProps {
   onFilesUploaded: (files: Array<{ key: string; name: string; size: number; type: string; pages: number }>) => void;
@@ -63,38 +64,45 @@ const SimpleAmplifyUploader: React.FC<SimpleAmplifyUploaderProps> = ({
     });
   };
 
-  const simulateAmplifyUpload = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      // Simulate upload to AWS Amplify
-      const timestamp = Date.now();
-      const key = `uploads/${timestamp}-${file.name}`;
+  const uploadToAmplifyStorage = async (file: File): Promise<string> => {
+    const timestamp = Date.now();
+    const key = `uploads/${timestamp}-${file.name}`;
+    
+    try {
+      const result = await uploadData({
+        path: key,
+        data: file,
+        options: {
+          onProgress: ({ transferredBytes, totalBytes }) => {
+            if (totalBytes) {
+              const progress = Math.round((transferredBytes / totalBytes) * 100);
+              setUploadedFiles(prev => prev.map(f => 
+                f.key === key 
+                  ? { ...f, progress }
+                  : f
+              ));
+            }
+          },
+        },
+      }).result;
       
-      // Simulate upload progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 20;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-          
-          // Update file progress
-          setUploadedFiles(prev => prev.map(f => 
-            f.key === key 
-              ? { ...f, progress: 100, status: 'completed' as const }
-              : f
-          ));
-          
-          resolve(key);
-        } else {
-          // Update progress
-          setUploadedFiles(prev => prev.map(f => 
-            f.key === key 
-              ? { ...f, progress: Math.round(progress) }
-              : f
-          ));
-        }
-      }, 100);
-    });
+      // Mark as completed
+      setUploadedFiles(prev => prev.map(f => 
+        f.key === key 
+          ? { ...f, progress: 100, status: 'completed' as const }
+          : f
+      ));
+      
+      return result.path;
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadedFiles(prev => prev.map(f => 
+        f.key === key 
+          ? { ...f, status: 'error' as const }
+          : f
+      ));
+      throw error;
+    }
   };
 
   const handleFileUpload = async (files: FileList) => {
@@ -131,10 +139,10 @@ const SimpleAmplifyUploader: React.FC<SimpleAmplifyUploaderProps> = ({
 
     setUploadedFiles(prev => [...prev, ...newFiles]);
 
-    // Upload files one by one
+    // Upload files one by one to AWS Amplify Storage
     try {
       for (const file of validFiles) {
-        await simulateAmplifyUpload(file);
+        await uploadToAmplifyStorage(file);
       }
       
       // Process completed files for parent component
