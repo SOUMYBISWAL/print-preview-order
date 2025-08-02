@@ -5,8 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { FileUploader } from '@aws-amplify/ui-react-storage';
-import '@aws-amplify/ui-react/styles.css';
+import { EnhancedAmplifyUploader } from "@/components/EnhancedAmplifyUploader";
 
 const Upload = () => {
   const [, setLocation] = useLocation();
@@ -51,40 +50,8 @@ const Upload = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Upload Your Files</h1>
           
-          {/* AWS Amplify File Upload Component */}
-          <Card>
-            <CardContent className="p-6">
-              <FileUploader
-                acceptedFileTypes={[
-                  'application/pdf',
-                  'application/msword', 
-                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                  'image/*',
-                  'text/plain'
-                ]}
-                path="uploads/"
-                maxFileCount={10}
-                isResumable
-                autoUpload
-                showThumbnails
-                onUploadSuccess={({ key }) => {
-                  console.log('File uploaded successfully:', key);
-                  // Calculate file pages and update state
-                  const fileName = key.split('/').pop() || '';
-                  const mockFile = { key, name: fileName, size: 1000, type: 'application/pdf', pages: 1 };
-                  setUploadedFiles(prev => [...prev, mockFile]);
-                  toast.success('File uploaded to AWS S3 successfully!');
-                }}
-                onUploadError={(error) => {
-                  console.error('Upload error:', error);
-                  toast.error(`Upload failed: ${error}`);
-                }}
-                onUploadStart={({ file }) => {
-                  console.log('Upload started:', file.name);
-                }}
-              />
-            </CardContent>
-          </Card>
+          {/* Enhanced AWS Amplify File Upload Component */}
+          <EnhancedAmplifyUploader onUploadComplete={handleFilesUploaded} />
 
           {uploadedFiles.length > 0 && (
             <Card className="mb-6 mt-6">
