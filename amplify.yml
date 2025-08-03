@@ -1,25 +1,11 @@
 version: 1
-backend:
-  phases:
-    build:
-      commands:
-        - npm install --legacy-peer-deps --no-audit --no-fund
-        - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json --out-dir ./
 frontend:
   phases:
     preBuild:
       commands:
-        - nvm install 20.19.0
-        - nvm use 20.19.0
-        - node --version
-        - npm --version
-        - rm -f package-lock.json
-        - npm cache clean --force || true
-        - echo "legacy-peer-deps=true" > .npmrc
-        - echo "audit=false" >> .npmrc
-        - echo "fund=false" >> .npmrc
+        - echo "Node version:" && node --version
+        - echo "NPM version:" && npm --version
         - npm install --legacy-peer-deps --no-audit --no-fund
-        - npm ls --depth=0 || true
     build:
       commands:
         - npm run build

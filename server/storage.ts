@@ -128,6 +128,7 @@ export class MemStorage implements IStorage {
     const newOrder: Order = {
       ...order,
       id,
+      status: order.status || "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
