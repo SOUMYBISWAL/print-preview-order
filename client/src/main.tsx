@@ -20,7 +20,6 @@ async function initializeApp() {
     Amplify.configure({
       Auth: {
         Cognito: {
-          region: 'us-east-1',
           userPoolId: 'us-east-1_mock',
           userPoolClientId: 'mock_client_id',
           identityPoolId: 'us-east-1:mock-identity-pool',

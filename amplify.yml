@@ -1,4 +1,10 @@
 version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - npm install --legacy-peer-deps --no-audit --no-fund
+        - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json --out-dir ./
 frontend:
   phases:
     preBuild:
@@ -16,9 +22,9 @@ frontend:
         - npm ls --depth=0 || true
     build:
       commands:
-        - node build-frontend.js
+        - npm run build
   artifacts:
-    baseDirectory: dist
+    baseDirectory: dist/public
     files:
       - '**/*'
   cache:

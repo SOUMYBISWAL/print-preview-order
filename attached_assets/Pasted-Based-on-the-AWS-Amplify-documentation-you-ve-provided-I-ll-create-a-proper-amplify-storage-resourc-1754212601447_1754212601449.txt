@@ -1,0 +1,45 @@
+Based on the AWS Amplify documentation you've provided, I'll create a proper amplify/storage/resource.ts configuration file for your backend storage setup.Amplify Storage Resource ConfigurationCode import { defineStorage } from '@aws-amplify/backend';
+
+export const storage = defineStorage({
+  name: 'amplifyTeamDrive',
+  access: (allow) => ({
+    // Public files - accessible to all users (guests and authenticated)
+    'public/*': [
+      allow.gNow you'll also need to update your amplify/backend.ts file to include the storage configuration:Amplify Backend ConfigurationCode import { defineBackend } from '@aws-amplify/backend';
+import { auth } from './auth/resource';
+import { storage, documentsBucket, backupBucket } from './storage/resource';
+
+defineBackend({
+  auth,
+  storage,
+  // Uncomment the lines below if you want This configuration provides:
+Main Storage Bucket Features:
+
+Public Files (public/*) - Anyone can read, authenticated users can write/delete
+Profile Pictures (profile-pictures/{entity_id}/*) - Public viewing, only owner can modify
+Picture Submissions (picture-submissions/*) - Community upload area
+Protected Files (protected/{entity_id}/*) - Authenticated users can read, only owner can modify
+Private Files (private/{entity_id}/*) - Only owner has access
+Documents (documents/{entity_id}/*) - Personal document storage with read access for other authenticated users
+Media Files (media/*) - General media storage
+Shared Folder (shared/*) - Collaborative space for authenticated users
+
+Optional Additional Buckets:
+
+Documents Bucket - Dedicated for document storage
+Backup Bucket - For backup purposes
+
+Access Levels Explained:
+
+allow.guest.to(['read']) - Unauthenticated users can read
+allow.authenticated.to(['read', 'write', 'delete']) - Signed-in users have full access
+allow.entity('identity').to([...]) - Only the file owner (based on their identity ID) has access
+
+Next Steps:
+
+Create the folder structure: amplify/storage/resource.ts
+Update your amplify/backend.ts file
+Run npx ampx sandbox to test locally
+Commit and push to deploy: git commit -am "add storage backend" && git push
+
+The {entity_id} placeholder will be automatically replaced with the user's identity ID when they upload files, ensuring proper file isolation between users.

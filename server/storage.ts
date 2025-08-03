@@ -1,4 +1,4 @@
-import { users, orders, type User, type InsertUser, type Order, type InsertOrder, type UpdateOrder } from "../shared/schema.js";
+import { users, orders, type User, type InsertUser, type Order, type InsertOrder, type UpdateOrder } from "../shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need

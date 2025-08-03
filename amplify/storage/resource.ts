@@ -1,29 +1,29 @@
 import { defineStorage } from '@aws-amplify/backend';
 
 export const storage = defineStorage({
-  name: 'printliteStorage',
+  name: 'PrintLiteStorage',
   access: (allow) => ({
-    // Public uploads for guest users (documents for printing)
-    'public/uploads/*': [
+    // Document uploads - for PDF, DOC, DOCX files to be printed
+    'documents/*': [
       allow.guest.to(['read', 'write']),
       allow.authenticated.to(['read', 'write', 'delete'])
     ],
-    // User-specific uploads (authenticated users)
-    'private/{entity_id}/uploads/*': [
-      allow.entity('identity').to(['read', 'write', 'delete'])
-    ],
-    // Documents folder for processed files
-    'public/documents/*': [
+
+    // File uploads - temporary storage for upload processing
+    'uploads/*': [
       allow.guest.to(['read', 'write']),
       allow.authenticated.to(['read', 'write', 'delete'])
     ],
-    // Admin-only access to all files
-    'admin/*': [
+
+    // Order files - linked to specific orders
+    'orders/{entity_id}/*': [
+      allow.guest.to(['read', 'write']),
       allow.authenticated.to(['read', 'write', 'delete'])
     ],
-    // Temporary uploads (can be cleaned up automatically)
-    'temp/*': [
-      allow.guest.to(['read', 'write']),
+
+    // Public files - for static assets and public documents
+    'public/*': [
+      allow.guest.to(['read']),
       allow.authenticated.to(['read', 'write', 'delete'])
     ]
   })
