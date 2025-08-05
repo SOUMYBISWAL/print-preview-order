@@ -1,0 +1,14 @@
+{
+  "name": "amplify-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "ampx build",
+    "deploy": "ampx deploy",
+    "dev": "ampx sandbox"
+  },
+  "dependencies": {
+    "@aws-amplify/backend": "^1.16.1",
+    "@aws-amplify/backend-cli": "^1.8.0"
+  }
+}
