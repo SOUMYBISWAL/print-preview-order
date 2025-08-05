@@ -1,0 +1,92 @@
+The final error you're hitting now is:
+
+🔴 Error:
+vbnet
+Copy
+Edit
+CustomerError: Artifact directory doesn't exist: dist/public
+💡 Root Cause:
+Your amplify.yml file is configured to expect the frontend build output to be in dist/public, but your actual build output goes to dist/.
+
+This mismatch causes Amplify to fail when trying to find the output folder to deploy.
+
+✅ Fix:
+🔧 Option 1: Fix amplify.yml
+Update your amplify.yml file's artifact output path from:
+
+yaml
+Copy
+Edit
+artifacts:
+  baseDirectory: dist/public
+➡️ to:
+
+yaml
+Copy
+Edit
+artifacts:
+  baseDirectory: dist
+Full example:
+
+yaml
+Copy
+Edit
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**
+
+# Optional: keep if needed
+customHeaders:
+  - pattern: '**/*'
+    headers:
+      - key: 'Cache-Control'
+        value: 'no-cache'
+📁 Option 2: Fix Build Output Location (if dist/public is intentional)
+If your app was supposed to output into dist/public (e.g., nested structure), update your build script to do that.
+
+For example, change vite.config.ts like this:
+
+ts
+Copy
+Edit
+export default defineConfig({
+  build: {
+    outDir: 'dist/public',
+  },
+});
+But this is usually unnecessary unless you're doing something custom.
+
+🟡 Bonus Warnings to Review
+You also saw:
+
+❗ Custom Headers Deprecation:
+vbnet
+Copy
+Edit
+[DEPRECATION WARNING] using amplify.yml to modify custom headers is being deprecated.
+✅ Fix: Move header settings into a separate customHttp.yml file.
+More info: Amplify Docs - Custom Headers
+
+✅ Summary of Fix Steps:
+✔ Update amplify.yml → set baseDirectory: dist instead of dist/public
+
+✔ Push the change to your repository
+
+✔ Let Amplify rebuild and deploy
+
+✅ (Optional) Migrate custom headers to customHttp.yml
+
+Let me know if you'd like me to help generate the fixed amplify.yml based on your full stack (React + Vite + Express), or if you need to move the headers to the new format.
