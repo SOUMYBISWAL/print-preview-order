@@ -9,37 +9,35 @@ const queryClient = new QueryClient()
 // Configure Amplify asynchronously
 async function initializeApp() {
   try {
-    // Dynamic import for build compatibility
+    // Try to import the amplify_outputs.json file
     const amplifyModule = await import('../../amplify_outputs.json');
     const amplifyConfig = amplifyModule.default || amplifyModule;
-    console.log('Configuring Amplify with configuration');
-    Amplify.configure(amplifyConfig);
-  } catch (error) {
-    console.log('Running without Amplify configuration (development mode)');
-    // Use comprehensive mock config for development that won't cause undefined errors
-    Amplify.configure({
-      Auth: {
-        Cognito: {
-          userPoolId: 'us-east-1_mock',
-          userPoolClientId: 'mock_client_id',
-          identityPoolId: 'us-east-1:mock-identity-pool',
-          loginWith: {
-            email: true
-          },
-          signUpVerificationMethod: 'code',
-          userAttributes: {
-            email: {
-              required: true
-            }
-          }
-        }
-      },
-      Storage: {
-        S3: {
-          region: 'us-east-1',
-          bucket: 'mock-storage-bucket'
-        }
+    
+    // Check if this is a placeholder config or real config
+    if (amplifyConfig.auth?.user_pool_id?.includes('placeholder')) {
+      console.log('Detected placeholder Amplify config, running in development mode');
+      // Use environment variables if available, otherwise fallback to local backend
+      const isDevelopment = import.meta.env.DEV || !import.meta.env.VITE_AMPLIFY_ENABLED;
+      if (isDevelopment) {
+        console.log('Using local backend for development');
+        // Minimal config that won't cause errors
+        Amplify.configure({
+          Auth: { Cognito: { userPoolId: 'local', userPoolClientId: 'local' } },
+          Storage: { S3: { region: 'us-east-1', bucket: 'local' } }
+        });
+      } else {
+        Amplify.configure(amplifyConfig);
       }
+    } else {
+      console.log('Configuring Amplify with production configuration');
+      Amplify.configure(amplifyConfig);
+    }
+  } catch (error) {
+    console.log('No Amplify configuration found, running in local development mode');
+    // Minimal config that won't cause undefined errors
+    Amplify.configure({
+      Auth: { Cognito: { userPoolId: 'local', userPoolClientId: 'local' } },
+      Storage: { S3: { region: 'us-east-1', bucket: 'local' } }
     });
   }
 

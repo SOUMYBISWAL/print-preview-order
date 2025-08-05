@@ -1,0 +1,91 @@
+The deployment error you're facing in AWS Amplify has two main causes, both of which need to be addressed:
+
+✅ 1. Node.js Version Mismatch
+Error:
+bash
+Copy
+Edit
+npm WARN EBADENGINE Unsupported engine
+package: 'lru-cache@11.1.0'
+required: { node: '20 || >=22' }
+current: { node: 'v18.20.8' }
+💡 Explanation:
+Your codebase (or some dependencies like lru-cache, react-router@7.7.1, etc.) requires Node.js v20 or higher, but Amplify's default environment is currently using Node.js v18, which causes these EBADENGINE warnings.
+
+✅ Fix:
+Set the Node.js version to 20 or higher in Amplify:
+
+In your project root, create or update the .nvmrc file:
+
+Copy
+Edit
+20
+OR, update the amplify.yml to explicitly set the node version:
+
+yaml
+Copy
+Edit
+version: 1
+backend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install 20
+        - nvm use 20
+        - npm install
+    build:
+      commands:
+        - npm run build
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install 20
+        - nvm use 20
+        - npm install
+    build:
+      commands:
+        - npm run build
+✅ 2. Missing File: amplify_outputs.json
+Error:
+bash
+Copy
+Edit
+Could not resolve "../../amplify_outputs.json" from "client/src/main.tsx"
+💡 Explanation:
+Your frontend (likely main.tsx) is importing a file ../../amplify_outputs.json, but this file doesn't exist at the path during build time.
+
+✅ Fix:
+Option 1: Check the path:
+
+Make sure amplify_outputs.json exists in your repo.
+
+If it’s generated dynamically, ensure it's created before the build step.
+
+Option 2: Use environment variables instead:
+
+Instead of importing a .json file, you can pass Amplify outputs as environment variables and access them via import.meta.env (if using Vite).
+
+ts
+Copy
+Edit
+// main.tsx (example)
+const apiUrl = import.meta.env.VITE_API_URL;
+Then, in Amplify’s Build settings, add those environment variables.
+
+🔁 Summary of Fixes
+Issue	Fix
+Node version too low	Use Node.js v20 in .nvmrc or amplify.yml
+Missing amplify_outputs.json	Ensure file exists or switch to environment variables
+
+✅ Recommended Action Plan
+Add .nvmrc file with:
+
+Copy
+Edit
+20
+Double-check amplify_outputs.json exists and is accessible during build.
+
+(Optional but better) Refactor to use environment variables instead of importing a JSON file.
+
+Let me know if you want help editing the amplify.yml file or refactoring to use environment variables.

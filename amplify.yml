@@ -1,9 +1,22 @@
 version: 1
+backend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install 20
+        - nvm use 20
+        - echo "Backend Node version:" && node --version
+        - npm install --legacy-peer-deps --no-audit --no-fund
+    build:
+      commands:
+        - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --out-dir .
 frontend:
   phases:
     preBuild:
       commands:
-        - echo "Node version:" && node --version
+        - nvm install 20
+        - nvm use 20
+        - echo "Frontend Node version:" && node --version
         - echo "NPM version:" && npm --version
         - npm install --legacy-peer-deps --no-audit --no-fund
     build:

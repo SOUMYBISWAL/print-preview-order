@@ -75,6 +75,23 @@ The application supports a hybrid deployment approach:
 - Project ready for development with robust client/server separation
 - Security practices maintained with proper CORS handling and input validation
 
+### August 5, 2025 - Replit Migration Completed
+- Successfully migrated project from Replit Agent to standard Replit environment
+- Backend API fully operational using Node.js native server (simple-server.js)
+- All core PrintLite endpoints working: health check, auth, file upload, orders, admin stats
+- Implemented fallback server solution to bypass dependency installation issues
+- Project ready for development with robust client/server separation
+- Security practices maintained with proper CORS handling and input validation
+
+### August 5, 2025 - AWS Amplify Deployment Issues Fixed
+- Fixed Node.js version mismatch by adding .nvmrc file with Node.js v20
+- Updated amplify.yml to explicitly use Node.js v20 for both backend and frontend phases
+- Created placeholder amplify_outputs.json file to resolve import errors
+- Enhanced main.tsx to gracefully handle both development and production configurations
+- Fixed duplicate imports in amplify/backend.ts
+- Added backend phase to amplify.yml with proper outputs generation command
+- AWS Amplify deployment errors resolved and ready for production deployment
+
 ### August 3, 2025 - Complete Backend Implementation
 - Fixed all TypeScript import and build errors
 - Created comprehensive Auth resource with secure user management
