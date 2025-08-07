@@ -18,7 +18,8 @@ export function ConnectionStatus({ onTestComplete }: ConnectionStatusProps) {
 
     try {
       // Test if Amplify is properly configured
-      const { Amplify } = await import('aws-amplify');
+      const AmplifyModule = await import('aws-amplify');
+      const Amplify = AmplifyModule.Amplify || AmplifyModule.default;
       const config = Amplify.getConfig();
       
       if (config?.Auth?.Cognito) {
