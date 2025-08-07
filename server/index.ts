@@ -13,7 +13,8 @@ async function startServer() {
       root: path.resolve(__dirname, '../client'),
       server: {
         host: '0.0.0.0',
-        port: 5000
+        port: 5000,
+        allowedHosts: ['1825e33d-34de-4a68-91bb-3463bec44651-00-2i6gcv7069y1z.riker.replit.dev', 'localhost', '127.0.0.1']
       }
     });
 
