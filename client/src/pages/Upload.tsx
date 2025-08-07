@@ -5,17 +5,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { EnhancedAmplifyUploader } from "@/components/EnhancedAmplifyUploader";
+import LocalFileUploader from "@/components/LocalFileUploader";
 
 const Upload = () => {
   const [, setLocation] = useLocation();
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; name: string; size: number; type: string; pages: number }>>([]);
   const [totalPageCount, setTotalPageCount] = useState(0);
 
-  const handleFilesUploaded = (files: Array<{ key: string; name: string; size: number; type: string; pages: number }>) => {
-    setUploadedFiles(files);
-    // Calculate total pages from all uploaded files
-    const totalPages = files.reduce((sum, file) => sum + file.pages, 0);
+  const handleFilesUploaded = (files: Array<{ key: string; name: string; size: number; type: string }>) => {
+    // Add a default page count of 1 for each file since LocalFileUploader doesn't provide page count
+    const filesWithPages = files.map(file => ({ ...file, pages: 1 }));
+    setUploadedFiles(filesWithPages);
+    // Calculate total pages from all uploaded files (1 page per file by default)
+    const totalPages = files.length;
     setTotalPageCount(totalPages);
     
     // Automatically proceed to print settings when files are uploaded
@@ -51,7 +53,7 @@ const Upload = () => {
           <h1 className="text-3xl font-bold mb-6">Upload Your Files</h1>
           
           {/* Enhanced AWS Amplify File Upload Component */}
-          <EnhancedAmplifyUploader onUploadComplete={handleFilesUploaded} />
+          <LocalFileUploader onFilesUploaded={handleFilesUploaded} />
 
           {uploadedFiles.length > 0 && (
             <Card className="mb-6 mt-6">
