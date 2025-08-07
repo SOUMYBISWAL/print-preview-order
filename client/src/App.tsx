@@ -22,10 +22,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import RefundPolicy from "./pages/RefundPolicy";
 import Pricing from "./pages/Pricing";
-import AuthChoice from "./pages/AuthChoice";
-import AmplifyAuthPage from "./pages/AmplifyAuthPage";
-import AmplifyTestPage from "./pages/AmplifyTestPage";
-import AmplifyUploadTest from "./pages/AmplifyUploadTest";
+
 
 
 
@@ -52,10 +49,7 @@ const App = () => (
         <Route path="/contact-us" component={Contact} />
         <Route path="/refund-policy" component={RefundPolicy} />
         <Route path="/pricing" component={Pricing} />
-        <Route path="/auth-choice" component={AuthChoice} />
-        <Route path="/amplify-auth" component={AmplifyAuthPage} />
-        <Route path="/amplify-test" component={AmplifyTestPage} />
-        <Route path="/amplify-upload-test" component={AmplifyUploadTest} />
+
         <Route component={NotFound} />
       </Switch>
     </TooltipProvider>

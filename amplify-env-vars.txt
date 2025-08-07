@@ -1,9 +1,0 @@
-# Environment Variables for AWS Amplify Console
-# Go to: App Settings → Environment Variables and add these:
-
-NPM_CONFIG_LEGACY_PEER_DEPS=true
-NODE_OPTIONS=--max-old-space-size=4096
-NPM_CONFIG_AUDIT=false
-NPM_CONFIG_FUND=false
-NODE_ENV=production
-CI=true
