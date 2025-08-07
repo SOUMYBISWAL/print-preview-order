@@ -11,12 +11,13 @@ interface UploadedFile {
   name: string;
   size: number;
   type: string;
+  pages: number;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
 }
 
 interface LocalFileUploaderProps {
-  onFilesUploaded: (files: Array<{ key: string; name: string; size: number; type: string }>) => void;
+  onFilesUploaded: (files: Array<{ key: string; name: string; size: number; type: string; pages: number }>) => void;
   maxFileCount?: number;
   acceptedFileTypes?: string[];
 }
@@ -50,6 +51,57 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const countPDFPages = async (file: File): Promise<number> => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const text = new TextDecoder().decode(arrayBuffer);
+      
+      // Count '/Type /Page' occurrences in PDF
+      const pageMatches = text.match(/\/Type\s*\/Page[^s]/g);
+      if (pageMatches) {
+        return pageMatches.length;
+      }
+      
+      // Fallback: count '/Page ' references
+      const altPageMatches = text.match(/\/Page\s/g);
+      if (altPageMatches) {
+        return Math.max(1, Math.floor(altPageMatches.length / 2));
+      }
+      
+      // If no matches found, estimate based on file size (rough estimate)
+      return Math.max(1, Math.floor(file.size / 50000));
+    } catch (error) {
+      console.warn('Error counting PDF pages:', error);
+      // Fallback estimate based on file size
+      return Math.max(1, Math.floor(file.size / 50000));
+    }
+  };
+
+  const estimatePageCount = async (file: File): Promise<number> => {
+    if (file.type === 'application/pdf') {
+      return await countPDFPages(file);
+    }
+    
+    // For Word documents, estimate based on file size
+    if (file.type.includes('word') || file.type.includes('document')) {
+      return Math.max(1, Math.floor(file.size / 30000)); // ~30KB per page estimate
+    }
+    
+    // For text files, estimate based on content
+    if (file.type === 'text/plain') {
+      try {
+        const text = await file.text();
+        const lines = text.split('\n').length;
+        return Math.max(1, Math.ceil(lines / 50)); // ~50 lines per page
+      } catch {
+        return 1;
+      }
+    }
+    
+    // For images and other files, default to 1 page
+    return 1;
+  };
+
   const isFileTypeAccepted = (fileType: string) => {
     return acceptedFileTypes.some(acceptedType => {
       if (acceptedType === 'image/*') {
@@ -59,7 +111,7 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
     });
   };
 
-  const handleFileSelect = useCallback((files: FileList) => {
+  const handleFileSelect = useCallback(async (files: FileList) => {
     const newFiles: UploadedFile[] = [];
     
     for (let i = 0; i < files.length; i++) {
@@ -79,12 +131,17 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
       
       const fileId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
+      // Count pages for the file
+      toast.info(`Analyzing ${file.name}...`);
+      const pageCount = await estimatePageCount(file);
+      
       const uploadedFile: UploadedFile = {
         file,
         id: fileId,
         name: file.name,
         size: file.size,
         type: file.type,
+        pages: pageCount,
         progress: 0,
         status: 'uploading'
       };
@@ -129,7 +186,8 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
           key: fileKey,
           name: fileData.name,
           size: fileData.size,
-          type: fileData.type
+          type: fileData.type,
+          pages: fileData.pages
         };
         completedFiles.push(newFile);
         localStorage.setItem('amplifyFiles', JSON.stringify(completedFiles));
@@ -137,7 +195,8 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
         // Notify parent component
         onFilesUploaded([newFile]);
         
-        toast.success(`${fileData.name} uploaded successfully!`);
+        toast.success(`${fileData.name} uploaded successfully! (${fileData.pages} page${fileData.pages > 1 ? 's' : ''})`);
+        toast.dismiss(); // Remove the "Analyzing..." toast
       } else {
         setUploadedFiles(prev => 
           prev.map(f => 
@@ -247,7 +306,9 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
                   {getFileIcon(file.type)}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{file.name}</p>
-                    <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                    <p className="text-xs text-gray-500">
+                      {formatFileSize(file.size)} • {file.pages} page{file.pages !== 1 ? 's' : ''}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {file.status === 'uploading' && (

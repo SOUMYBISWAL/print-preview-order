@@ -12,12 +12,10 @@ const Upload = () => {
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; name: string; size: number; type: string; pages: number }>>([]);
   const [totalPageCount, setTotalPageCount] = useState(0);
 
-  const handleFilesUploaded = (files: Array<{ key: string; name: string; size: number; type: string }>) => {
-    // Add a default page count of 1 for each file since LocalFileUploader doesn't provide page count
-    const filesWithPages = files.map(file => ({ ...file, pages: 1 }));
-    setUploadedFiles(filesWithPages);
-    // Calculate total pages from all uploaded files (1 page per file by default)
-    const totalPages = files.length;
+  const handleFilesUploaded = (files: Array<{ key: string; name: string; size: number; type: string; pages: number }>) => {
+    setUploadedFiles(files);
+    // Calculate total pages from all uploaded files
+    const totalPages = files.reduce((sum, file) => sum + file.pages, 0);
     setTotalPageCount(totalPages);
     
     // Automatically proceed to print settings when files are uploaded
