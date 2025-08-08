@@ -8,10 +8,10 @@ const __dirname = path.dirname(__filename);
 
 console.log('🚀 Starting PrintLite frontend-only development server...');
 
-// Start Vite development server for the client
-const clientPath = path.resolve(__dirname, '../client');
+// Start Vite development server from the root directory (where vite.config.ts is located)
+const rootPath = path.resolve(__dirname, '..');
 const viteProcess = spawn('npx', ['vite', 'dev', '--host', '0.0.0.0', '--port', '5000'], {
-  cwd: clientPath,
+  cwd: rootPath,
   stdio: 'inherit',
   shell: true
 });
