@@ -20,6 +20,18 @@ app.use('/assets', express.static(path.join(__dirname, '..', 'attached_assets'))
 // Serve node_modules for dependencies
 app.use('/node_modules', express.static(path.join(__dirname, '..', 'node_modules')));
 
+// Basic TypeScript/JSX transform middleware for development
+app.get('/src/*', (req, res, next) => {
+  const filePath = req.path;
+  if (filePath.endsWith('.tsx') || filePath.endsWith('.ts')) {
+    // For now, just serve the files as-is
+    // In a real scenario, you'd want to transform TypeScript
+    next();
+  } else {
+    next();
+  }
+});
+
 // SPA fallback - serve index.html for all routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(clientPath, 'index.html'));

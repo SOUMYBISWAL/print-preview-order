@@ -19,5 +19,20 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
+    fs: {
+      // Allow serving files from outside of the client root
+      allow: ['..']
+    }
   },
+  optimizeDeps: {
+    // Include dependencies that should be pre-bundled
+    include: [
+      'react',
+      'react-dom',
+      '@tanstack/react-query',
+      'wouter',
+      'lucide-react',
+      'sonner'
+    ]
+  }
 });
