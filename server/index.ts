@@ -1,29 +1,40 @@
-import { createServer } from 'vite';
-import { fileURLToPath } from 'url';
+// Frontend-only development server for PrintLite
+import { spawn } from 'child_process';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function startServer() {
-  try {
-    // Create a Vite development server
-    const server = await createServer({
-      configFile: path.resolve(__dirname, '../vite.config.ts'),
-      root: path.resolve(__dirname, '../client'),
-      server: {
-        host: '0.0.0.0',
-        port: 5000,
-        allowedHosts: ['1825e33d-34de-4a68-91bb-3463bec44651-00-2i6gcv7069y1z.riker.replit.dev', 'localhost', '127.0.0.1']
-      }
-    });
+console.log('🚀 Starting PrintLite frontend-only development server...');
 
-    await server.listen();
-    console.log('PrintLite development server running on http://0.0.0.0:5000');
-  } catch (error) {
-    console.error('Failed to start Vite server:', error);
-    process.exit(1);
-  }
-}
+// Start Vite development server for the client
+const clientPath = path.resolve(__dirname, '../client');
+const viteProcess = spawn('npx', ['vite', 'dev', '--host', '0.0.0.0', '--port', '5000'], {
+  cwd: clientPath,
+  stdio: 'inherit',
+  shell: true
+});
 
-startServer();
+viteProcess.on('error', (error) => {
+  console.error('❌ Failed to start Vite development server:', error);
+  process.exit(1);
+});
+
+viteProcess.on('close', (code) => {
+  console.log(`Vite development server exited with code ${code}`);
+  process.exit(code);
+});
+
+// Handle process termination gracefully
+process.on('SIGTERM', () => {
+  console.log('🛑 Terminating development server...');
+  viteProcess.kill('SIGTERM');
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 Terminating development server...');
+  viteProcess.kill('SIGINT');
+});
+
+console.log('✅ PrintLite is now running as a frontend-only application!');

@@ -65,8 +65,8 @@ const Checkout = () => {
       // Get cart details and other data from localStorage
       const printSettings = JSON.parse(localStorage.getItem('printSettings') || '{}');
       
-      // Get amplify files if they exist
-      const amplifyFilesData = JSON.parse(localStorage.getItem('amplifyFiles') || '[]');
+      // Get uploaded files if they exist
+      const uploadedFilesData = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
       
       const orderData = {
         customerName: name,
@@ -83,8 +83,8 @@ const Checkout = () => {
         deliveryAddress: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other Location",
         paymentMethod: paymentMethod,
         paymentStatus: paymentMethod === 'cash_on_delivery' ? 'pending' : 'completed',
-        fileNames: amplifyFilesData.length > 0 ? 
-          amplifyFilesData.map((file: any) => file.name || 'uploaded_file') :
+        fileNames: uploadedFilesData.length > 0 ? 
+          uploadedFilesData.map((file: any) => file.name || 'uploaded_file') :
           cartItems.map(item => item.id || 'uploaded_file'),
         specialInstructions: null
       };
@@ -119,7 +119,7 @@ const Checkout = () => {
         localStorage.setItem('orderData', JSON.stringify(localOrderData));
         localStorage.setItem('printCart', JSON.stringify([]));
         localStorage.removeItem('printSettings');
-        localStorage.removeItem('amplifyFiles');
+        localStorage.removeItem('uploadedFiles');
         window.dispatchEvent(new Event('cartUpdated'));
         
         // Navigate to confirmation page

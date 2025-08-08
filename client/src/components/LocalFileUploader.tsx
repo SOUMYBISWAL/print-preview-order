@@ -181,7 +181,7 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
         const fileKey = `local-${fileData.id}`;
         
         // Store file reference in localStorage for access during checkout
-        const completedFiles = JSON.parse(localStorage.getItem('amplifyFiles') || '[]');
+        const completedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
         const newFile = {
           key: fileKey,
           name: fileData.name,
@@ -190,7 +190,7 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
           pages: fileData.pages
         };
         completedFiles.push(newFile);
-        localStorage.setItem('amplifyFiles', JSON.stringify(completedFiles));
+        localStorage.setItem('uploadedFiles', JSON.stringify(completedFiles));
         
         // Notify parent component
         onFilesUploaded([newFile]);
@@ -213,9 +213,9 @@ const LocalFileUploader: React.FC<LocalFileUploaderProps> = ({
     setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
     
     // Remove from localStorage as well
-    const amplifyFiles = JSON.parse(localStorage.getItem('amplifyFiles') || '[]');
-    const updatedFiles = amplifyFiles.filter((f: any) => !f.key.includes(fileId));
-    localStorage.setItem('amplifyFiles', JSON.stringify(updatedFiles));
+    const uploadedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+    const updatedFiles = uploadedFiles.filter((f: any) => !f.key.includes(fileId));
+    localStorage.setItem('uploadedFiles', JSON.stringify(updatedFiles));
     
     toast.success("File removed");
   };
