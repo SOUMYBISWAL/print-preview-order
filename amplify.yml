@@ -5,12 +5,12 @@ frontend:
       commands:
         - nvm install 20
         - nvm use 20
-        - npm ci
+        - npm install
     build:
       commands:
-        - npx vite build
+        - cd client && npx vite build
   artifacts:
-    baseDirectory: dist/public
+    baseDirectory: client/dist
     files:
       - '**/*'
   cache:
