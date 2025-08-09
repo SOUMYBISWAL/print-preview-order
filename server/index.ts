@@ -12,7 +12,7 @@ process.chdir(clientPath);
 console.log('🚀 Starting Vite development server...');
 console.log('📁 Working directory:', clientPath);
 
-// Start Vite development server
+// Start Vite development server  
 const vite = spawn('npx', ['vite', '--host', '0.0.0.0', '--port', '5000'], {
   stdio: 'inherit',
   shell: true,
