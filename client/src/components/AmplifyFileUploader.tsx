@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Upload as UploadIcon, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
-import { uploadFileToS3, generateFileKey } from '@/lib/s3-client';
-import { debugCredentials } from '@/lib/debug-credentials';
+import { uploadData } from 'aws-amplify/storage';
 
 interface AmplifyFileUploaderProps {
   onFilesUploaded: (files: Array<{ 
@@ -80,33 +79,44 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
     }
   };
 
-  // Real S3 upload using AWS SDK
-  const uploadToS3 = async (file: File, onProgress?: (progress: number) => void): Promise<{ key: string; pages: number }> => {
+  // Real S3 upload using Amplify Storage
+  const uploadToAmplifyStorage = async (file: File, onProgress?: (progress: number) => void): Promise<{ key: string; pages: number }> => {
     try {
-      // Debug credentials first
-      debugCredentials();
+      // Create a unique key for the file
+      const timestamp = Date.now();
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const key = `documents/${timestamp}_${cleanFileName}`;
       
-      const key = generateFileKey(file.name);
+      console.log('Uploading file to Amplify Storage:', file.name, 'with key:', key);
       
-      console.log('Uploading file to S3:', file.name, 'with key:', key);
+      if (onProgress) onProgress(25);
       
-      const result = await uploadFileToS3(file, key, onProgress);
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Upload failed');
-      }
+      // Upload using Amplify Storage
+      const result = await uploadData({
+        key,
+        data: file,
+        options: {
+          contentType: file.type,
+          onProgress: ({ transferredBytes, totalBytes }) => {
+            if (onProgress && totalBytes) {
+              const progress = Math.round((transferredBytes / totalBytes) * 100);
+              onProgress(Math.min(progress, 100));
+            }
+          }
+        }
+      }).result;
       
       const pages = calculatePages(file);
       
-      console.log('File uploaded successfully to S3:', result.url);
+      console.log('File uploaded successfully to Amplify Storage:', result.key);
       
       return { 
-        key, 
+        key: result.key, 
         pages 
       };
-    } catch (error) {
-      console.error('S3 upload error:', error);
-      throw error;
+    } catch (error: any) {
+      console.error('Amplify Storage upload error:', error);
+      throw new Error(error.message || 'Upload failed');
     }
   };
 
@@ -140,7 +150,7 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
       setUploadedFiles(prev => [...prev, newFile]);
 
       try {
-        const result = await uploadToS3(file, (progress) => {
+        const result = await uploadToAmplifyStorage(file, (progress) => {
           setUploadedFiles(prev => 
             prev.map(f => 
               f.key === tempKey 

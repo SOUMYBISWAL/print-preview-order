@@ -1,23 +1,18 @@
 import { Amplify } from 'aws-amplify';
 
-// Real AWS Amplify configuration with credentials
+// Manual Amplify configuration for Storage
 const amplifyConfig = {
-  Auth: {
-    Cognito: {
-      // We'll configure this if authentication is needed later
-    }
-  },
   Storage: {
     S3: {
-      bucket: import.meta.env.VITE_AWS_S3_BUCKET || 'printlite-storage-dev',
-      region: import.meta.env.VITE_AWS_REGION || 'us-east-1',
+      bucket: 'printlite-storage-bucket',
+      region: 'ap-south-1',
     }
   }
 };
 
-// Configure Amplify with the backend
+// Configure Amplify with the storage configuration
 Amplify.configure(amplifyConfig);
 
-console.log('AWS Amplify configured with real credentials - ready for S3 deployment');
+console.log('AWS Amplify Storage configured for bucket: printlite-storage-bucket');
 
 export { amplifyConfig };
