@@ -7,11 +7,11 @@ const __dirname = path.dirname(__filename);
 
 console.log('🚀 Starting PrintLite frontend-only application...');
 
-// Start Vite development server from the root directory
+// Start Vite development server from the client directory
 const vite = spawn('npx', ['vite', '--host', '0.0.0.0', '--port', '5000'], {
   stdio: 'inherit',
   shell: true,
-  cwd: path.join(__dirname, '..')
+  cwd: path.join(__dirname, '..', 'client')
 });
 
 vite.on('close', (code) => {
