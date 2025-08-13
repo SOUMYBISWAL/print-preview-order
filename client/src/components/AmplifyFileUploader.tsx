@@ -1,10 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { StorageManager } from '@aws-amplify/ui-react-storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-// Badge component not available, will use simple styling instead
 import { toast } from 'sonner';
 import { Upload as UploadIcon, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { uploadFileToS3, generateFileKey } from '@/lib/s3-client';
 
 interface AmplifyFileUploaderProps {
   onFilesUploaded: (files: Array<{ 
@@ -80,23 +79,22 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
     }
   };
 
-  // Simulated upload to S3 using Amplify Storage
-  const uploadFileToS3 = async (file: File): Promise<{ key: string; pages: number }> => {
+  // Real S3 upload using AWS SDK
+  const uploadToS3 = async (file: File, onProgress?: (progress: number) => void): Promise<{ key: string; pages: number }> => {
     try {
-      // Create a unique key for the file
-      const timestamp = Date.now();
-      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const key = `documents/${timestamp}_${cleanFileName}`;
-
-      // For now, we'll simulate the upload since we need proper AWS credentials
-      // In production, this would use: uploadData({ key, data: file })
+      const key = generateFileKey(file.name);
       
-      console.log('Simulating S3 upload for file:', file.name, 'with key:', key);
+      console.log('Uploading file to S3:', file.name, 'with key:', key);
       
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      const result = await uploadFileToS3(file, key, onProgress);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Upload failed');
+      }
       
       const pages = calculatePages(file);
+      
+      console.log('File uploaded successfully to S3:', result.url);
       
       return { 
         key, 
@@ -138,20 +136,16 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
       setUploadedFiles(prev => [...prev, newFile]);
 
       try {
-        // Simulate progress
-        const progressInterval = setInterval(() => {
+        const result = await uploadToS3(file, (progress) => {
           setUploadedFiles(prev => 
             prev.map(f => 
               f.key === tempKey 
-                ? { ...f, progress: Math.min(f.progress + 10, 90) }
+                ? { ...f, progress }
                 : f
             )
           );
-        }, 200);
+        });
 
-        const result = await uploadFileToS3(file);
-        
-        clearInterval(progressInterval);
         
         setUploadedFiles(prev => {
           const updated = prev.map(f => 
