@@ -82,6 +82,14 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
   // Real S3 upload using Amplify Storage
   const uploadToAmplifyStorage = async (file: File, onProgress?: (progress: number) => void): Promise<{ key: string; pages: number }> => {
     try {
+      // Check if environment variables are available
+      const accessKeyId = import.meta.env.VITE_AWS_ACCESS_KEY_ID;
+      const secretAccessKey = import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
+      
+      if (!accessKeyId || !secretAccessKey) {
+        throw new Error('AWS credentials are not properly configured');
+      }
+      
       // Create a unique key for the file
       const timestamp = Date.now();
       const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -91,12 +99,16 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
       
       if (onProgress) onProgress(25);
       
-      // Upload using Amplify Storage
+      // Upload using Amplify Storage with credentials
       const result = await uploadData({
         key,
         data: file,
         options: {
           contentType: file.type,
+          credentials: {
+            accessKeyId,
+            secretAccessKey,
+          },
           onProgress: ({ transferredBytes, totalBytes }) => {
             if (onProgress && totalBytes) {
               const progress = Math.round((transferredBytes / totalBytes) * 100);
