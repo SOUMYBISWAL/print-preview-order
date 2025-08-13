@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Upload as UploadIcon, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { uploadFileToS3, generateFileKey } from '@/lib/s3-client';
+import { debugCredentials } from '@/lib/debug-credentials';
 
 interface AmplifyFileUploaderProps {
   onFilesUploaded: (files: Array<{ 
@@ -82,6 +83,9 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
   // Real S3 upload using AWS SDK
   const uploadToS3 = async (file: File, onProgress?: (progress: number) => void): Promise<{ key: string; pages: number }> => {
     try {
+      // Debug credentials first
+      debugCredentials();
+      
       const key = generateFileKey(file.name);
       
       console.log('Uploading file to S3:', file.name, 'with key:', key);
