@@ -43,6 +43,14 @@ Documents are uploaded and stored temporarily in browser memory. Print settings 
 
 ## Recent Updates
 
+### August 13, 2025 - AWS Amplify Storage Integration
+- ✅ Added AWS Amplify backend configuration with S3 storage
+- ✅ Created AmplifyFileUploader component with S3 integration
+- ✅ Set up automatic S3 bucket creation through Amplify Storage
+- ✅ Configured file upload to S3 with proper permissions (guest and authenticated access)
+- ✅ Updated upload flow to use AWS S3 instead of local storage
+- ✅ Ready for AWS credentials setup and S3 bucket deployment
+
 ### August 9, 2025 - Complete Replit Environment Migration 
 - ✅ Successfully migrated from Replit Agent to Replit environment
 - ✅ Fixed all dependency resolution issues (tsx, clsx, class-variance-authority, aria-hidden, autoprefixer)
