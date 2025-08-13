@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { StorageManager } from '@aws-amplify/ui-react-storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+// Badge component not available, will use simple styling instead
 import { toast } from 'sonner';
 import { Upload as UploadIcon, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -330,22 +330,22 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
                             style={{ width: `${file.progress}%` }}
                           ></div>
                         </div>
-                        <Badge variant="secondary">{file.progress}%</Badge>
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">{file.progress}%</span>
                       </div>
                     )}
                     
                     {file.status === 'completed' && (
-                      <Badge variant="default" className="bg-green-100 text-green-800">
+                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded flex items-center">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Uploaded
-                      </Badge>
+                      </span>
                     )}
                     
                     {file.status === 'error' && (
-                      <Badge variant="destructive">
+                      <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded flex items-center">
                         <AlertCircle className="h-3 w-3 mr-1" />
                         Error
-                      </Badge>
+                      </span>
                     )}
                     
                     <Button

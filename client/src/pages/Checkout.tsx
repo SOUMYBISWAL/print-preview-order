@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { apiRequest } from "@/lib/queryClient";
+import { toast } from "sonner";
 
 interface PrintSummary {
   id?: string;
@@ -89,32 +89,31 @@ const Checkout = () => {
         specialInstructions: null
       };
 
-      console.log('Sending order data:', orderData);
+      console.log('Creating local order:', orderData);
 
-      // Use apiRequest from queryClient for better error handling
-      const result = await apiRequest('/api/orders', {
-        method: 'POST',
-        body: JSON.stringify(orderData)
-      });
-
-      console.log('Order response:', result);
+      // Generate a unique order ID
+      const orderId = 'PL' + Date.now().toString().slice(-8);
       
-      if (result.success && result.order) {
-        // Save order locally for tracking purposes
-        const localOrderData = {
-          orderId: result.order.id,
-          customerName: name,
-          files: orderData.fileNames,
-          status: "Processing",
-          totalAmount: totalPrice + deliveryFee,
-          dateCreated: new Date().toISOString(),
-          mobile,
-          location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
-          paymentMethod,
-          deliveryFee,
-          subtotal: totalPrice
-        };
+      // Create order directly in localStorage (frontend-only)
+      const localOrderData = {
+        orderId: orderId,
+        customerName: name,
+        files: orderData.fileNames,
+        status: "Processing",
+        totalAmount: totalPrice + deliveryFee,
+        dateCreated: new Date().toISOString(),
+        mobile,
+        location: location === "cutm-bbsr" ? "CUTM Bhubaneswar" : "Other",
+        paymentMethod,
+        deliveryFee,
+        subtotal: totalPrice
+      };
 
+      // Save order to localStorage for tracking
+        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        existingOrders.push(localOrderData);
+        localStorage.setItem('orders', JSON.stringify(existingOrders));
+        
         // Clear cart and navigate to confirmation
         localStorage.setItem('orderData', JSON.stringify(localOrderData));
         localStorage.setItem('printCart', JSON.stringify([]));
@@ -122,14 +121,13 @@ const Checkout = () => {
         localStorage.removeItem('uploadedFiles');
         window.dispatchEvent(new Event('cartUpdated'));
         
+        toast.success("Order placed successfully!");
+        
         // Navigate to confirmation page
         navigate("/order-confirmation");
-      } else {
-        throw new Error('Invalid response from server');
-      }
     } catch (error) {
       console.error('Error creating order:', error);
-      alert(`Failed to place order: ${error.message}. Please try again.`);
+      toast.error("Failed to place order. Please try again.");
     } finally {
       setIsProcessing(false);
     }
