@@ -1,0 +1,47 @@
+The message "No backend environment association found, continuing" in AWS Amplify typically means that your frontend build is occurring without an associated backend environment, preventing files like aws-exports.js from being generated and leading to failed or incomplete builds.
+
+Common Causes and Solutions
+Missing Backend Build Step:
+If you are using previews or automatic branch detection, you must explicitly add a backend build phase to your amplify.yml build settings. Without this, Amplify skips backend provisioning for new branches or PR builds.
+
+Solution:
+Add the following block to your amplify.yml under the build section:
+
+text
+backend:
+  phases:
+    build:
+      commands:
+        - amplifyPush --simple
+This step ensures that Amplify creates or connects to the backend environment for every build, including previews and auto-detected branches.
+
+Disconnected or Deleted Backend:
+Double-check if the backend environment still exists and is properly associated with your app. If it was removed or renamed, the frontend will not be able to connect.
+
+Solution:
+Use the CLI to pull or re-link the backend environment:
+
+bash
+amplify pull --appId <your-app-id> --envName <your-backend-env>
+This command updates local configuration and verifies the backend association.
+
+Branch Environment Settings:
+Amplify only automatically creates backend environments if configured to do so for each branch or Pull Request (PR). Make sure this setting is enabled in the Amplify Console's branch settings.
+
+Detached HEAD or CI/CD Issues:
+If your repo is checked out in “detached HEAD” state or has improper IAM permissions, backend detection might fail. Ensure the IAM role used in Amplify has the correct permissions, and that the repository is in a normal checked-out branch state.
+
+Additional Tips
+If you only made frontend changes, ensure that Amplify's build step isn't skipping backend by mistake.
+
+For teams or multiple branches, refer to Amplify's environment management:
+
+Use amplify env add for new environments
+
+Use amplify env checkout <env> to switch
+
+Reference Links
+All recommendations are based on recent developer experiences and AWS documentation.
+
+In summary:
+Add the backend build step to your amplify.yml, verify backend environment existence and association, check your branch and environment connection settings, and ensure correct IAM roles and repo state. This should resolve the "No backend environment association found" and allow successful frontend-backend integration in your Amplify builds.
