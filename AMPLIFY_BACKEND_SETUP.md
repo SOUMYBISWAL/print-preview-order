@@ -1,59 +1,67 @@
 # Amplify Backend Setup Guide
 
+## Issue: "No Backend Environment" Error
+
+The application is showing "no backend environment" because the AWS Amplify backend needs to be deployed to create the DynamoDB tables and S3 storage buckets.
+
 ## Current Status
-❌ AWS credentials provided are invalid/expired
-- Error: "The AWS Access Key Id you provided does not exist in our records"
-- Error: "The security token included in the request is invalid"
+- ✅ Amplify backend configuration is complete (amplify/backend.ts)
+- ✅ Frontend integration with Amplify is complete
+- ❌ Backend resources not deployed to AWS yet
 
-## Solutions to Deploy Your Amplify Backend
+## Solution Steps
 
-### Option 1: Update AWS Credentials (Recommended)
-1. **Go to AWS Console**: https://console.aws.amazon.com/
-2. **Navigate to IAM**: Services → IAM → Users → Your User
-3. **Create New Access Key**:
-   - Go to "Security credentials" tab
-   - Click "Create access key"
-   - Choose "Application running on AWS CLI"
-   - Download the credentials
-4. **Update Replit Secrets** with new credentials:
-   - AWS_ACCESS_KEY_ID
-   - AWS_SECRET_ACCESS_KEY
-   - AWS_REGION (e.g., ap-southeast-1)
+### Step 1: Deploy Amplify Backend
+```bash
+# Install Amplify CLI if not already installed
+npm install -g @aws-amplify/cli@latest
 
-### Option 2: Use AWS CloudShell
-1. Open AWS CloudShell in your AWS Console
-2. Clone your repository
-3. Run: `npx ampx sandbox` from the project root
+# Deploy the backend
+npx amplify sandbox --profile sandbox
+```
 
-### Option 3: Local Development with AWS CLI
-1. Install AWS CLI locally
-2. Run: `aws configure` with your credentials
-3. Deploy from your local machine: `npx ampx sandbox`
+### Step 2: Configure Environment Variables
+After deployment, Amplify will provide:
+- DynamoDB table names
+- S3 bucket names  
+- API endpoints
+- Authentication configuration
 
-### Option 4: Use GitHub Actions (CI/CD)
-1. Set up GitHub Actions with AWS credentials
-2. Configure automated deployment pipeline
-3. Deploy via GitHub workflow
+### Step 3: Update Frontend Configuration
+The deployed backend will automatically provide the configuration for:
+- amplify_outputs.json (auto-generated)
+- Environment variables for production
 
-## What Your Backend Will Create
-When successfully deployed, your Amplify backend will create:
+## Backend Resources Created
+Once deployed, the following will be available:
 
-✅ **S3 Storage Bucket** for file uploads
-✅ **Cognito Identity Pool** for authentication  
-✅ **IAM Roles** for proper access control
-✅ **CDK Stack** with all infrastructure
+### DynamoDB Tables
+- **PrintOrders**: Stores print job orders with customer details
+- **FileMetadata**: Tracks uploaded files with S3 keys and metadata
+- **PrintSettings**: Stores print configuration preferences
 
-## Current Configuration Ready
-Your backend configuration is already set up in `/amplify/`:
-- `backend.ts` - Main backend definition
-- `auth/resource.ts` - Authentication settings
-- `storage/resource.ts` - S3 storage configuration
-- `data/resource.ts` - Data layer setup
+### S3 Storage
+- **File Storage Bucket**: Stores uploaded documents
+- **Public/Private access controls**: Configured for secure file management
 
-## Next Steps
-1. Get valid AWS credentials
-2. Update Replit secrets
-3. Run deployment command
-4. Your admin panel will then show real files from S3 storage
+### Authentication
+- **Cognito User Pool**: For admin authentication (if needed)
+- **IAM Roles**: For secure resource access
 
-The application works perfectly with local storage currently - this just adds cloud persistence.
+## Troubleshooting
+
+### If deployment fails:
+1. Check AWS credentials are configured
+2. Ensure sufficient IAM permissions
+3. Check region availability for all services
+
+### If "no backend environment" persists:
+1. Verify amplify_outputs.json exists
+2. Check Amplify configuration in main.tsx
+3. Restart the development server
+
+## Development vs Production
+- **Development**: Uses amplify sandbox for testing
+- **Production**: Requires full Amplify app deployment
+
+The app currently falls back to localStorage when backend is not available, ensuring functionality during development.

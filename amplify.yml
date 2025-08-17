@@ -8,9 +8,10 @@ frontend:
         - npm install
     build:
       commands:
-        - cd client && npx vite build
+        - npm run dev &
+        - npx vite build
   artifacts:
-    baseDirectory: client/dist
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
