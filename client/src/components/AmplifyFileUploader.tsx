@@ -99,16 +99,12 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
       
       if (onProgress) onProgress(25);
       
-      // Upload using Amplify Storage with credentials
+      // Upload using Amplify Storage
       const result = await uploadData({
         key,
         data: file,
         options: {
           contentType: file.type,
-          credentials: {
-            accessKeyId,
-            secretAccessKey,
-          },
           onProgress: ({ transferredBytes, totalBytes }) => {
             if (onProgress && totalBytes) {
               const progress = Math.round((transferredBytes / totalBytes) * 100);

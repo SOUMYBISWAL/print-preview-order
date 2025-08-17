@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Printer, Check, Clock, Package } from 'lucide-react';
+import { Printer, Check, Clock, Package, FileText, Download, Eye, Trash2 } from 'lucide-react';
 import Navbar from "@/components/Navbar";
 import { apiRequest } from "@/lib/queryClient";
+import { list, getUrl, remove } from 'aws-amplify/storage';
+import { toast } from 'sonner';
+import '../lib/amplify-config';
 
 interface Order {
   id: string;
@@ -29,6 +32,21 @@ interface Order {
   deliveryAddress: string;
 }
 
+interface StorageFile {
+  key: string;
+  name: string;
+  size: number;
+  lastModified: Date;
+  uploadedBy?: string;
+  printSettings?: {
+    paperSize: string;
+    printType: string;
+    sides: string;
+    binding: string;
+    copies: number;
+  };
+}
+
 interface Stats {
   totalOrders: number;
   pendingOrders: number;
@@ -40,12 +58,15 @@ const Admin = () => {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [orders, setOrders] = useState<Order[]>([]);
+  const [storageFiles, setStorageFiles] = useState<StorageFile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [fileSearchTerm, setFileSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginMobile, setLoginMobile] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
+  const [loadingFiles, setLoadingFiles] = useState(false);
   const [stats, setStats] = useState<Stats>({
     totalOrders: 0,
     pendingOrders: 0,
@@ -61,9 +82,10 @@ const Admin = () => {
   }, []);
 
   useEffect(() => {
-    // Only fetch orders if authenticated
+    // Only fetch orders and files if authenticated
     if (isAuthenticated) {
       fetchOrders();
+      fetchStorageFiles();
     }
   }, [isAuthenticated]);
 
@@ -94,6 +116,64 @@ const Admin = () => {
       // Fallback to sample data if API fails
       loadSampleOrders();
     }
+  };
+
+  const fetchStorageFiles = async () => {
+    setLoadingFiles(true);
+    try {
+      // Fetch files from Amplify Storage
+      const result = await list({ prefix: 'documents/' });
+      
+      const filesWithMetadata = await Promise.all(
+        result.items.map(async (item) => {
+          try {
+            // Get print settings from localStorage if available
+            const storedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+            const matchingFile = storedFiles.find((f: any) => f.key === item.key);
+            
+            return {
+              key: item.key,
+              name: item.key.split('/').pop() || item.key,
+              size: item.size || 0,
+              lastModified: item.lastModified || new Date(),
+              uploadedBy: matchingFile?.uploadedBy || 'Unknown',
+              printSettings: matchingFile?.printSettings || null
+            };
+          } catch (error) {
+            console.error('Error processing file:', item.key, error);
+            return {
+              key: item.key,
+              name: item.key.split('/').pop() || item.key,
+              size: item.size || 0,
+              lastModified: item.lastModified || new Date(),
+              uploadedBy: 'Unknown',
+              printSettings: null
+            };
+          }
+        })
+      );
+
+      setStorageFiles(filesWithMetadata);
+    } catch (error) {
+      console.error('Error fetching storage files:', error);
+      // Fallback to localStorage files if Amplify fails
+      try {
+        const storedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+        const localFiles = storedFiles.map((file: any) => ({
+          key: file.key || file.name,
+          name: file.name,
+          size: file.size || 0,
+          lastModified: new Date(file.uploadDate || Date.now()),
+          uploadedBy: 'Local Storage',
+          printSettings: file.printSettings || null
+        }));
+        setStorageFiles(localFiles);
+      } catch (localError) {
+        console.error('Error loading local files:', localError);
+        setStorageFiles([]);
+      }
+    }
+    setLoadingFiles(false);
   };
 
   const calculateStats = (ordersData: Order[]) => {
@@ -218,6 +298,42 @@ const Admin = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const filteredFiles = storageFiles.filter(file => 
+    file.name.toLowerCase().includes(fileSearchTerm.toLowerCase()) ||
+    file.key.toLowerCase().includes(fileSearchTerm.toLowerCase())
+  );
+
+  const handleDownloadFile = async (fileKey: string) => {
+    try {
+      const downloadUrl = await getUrl({ key: fileKey });
+      window.open(downloadUrl.url.toString(), '_blank');
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast.error('Failed to download file');
+    }
+  };
+
+  const handleDeleteFile = async (fileKey: string) => {
+    if (!confirm('Are you sure you want to delete this file?')) return;
+    
+    try {
+      await remove({ key: fileKey });
+      setStorageFiles(prev => prev.filter(file => file.key !== fileKey));
+      toast.success('File deleted successfully');
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      toast.error('Failed to delete file');
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Delivered':
@@ -318,9 +434,10 @@ const Admin = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
+              <TabsTrigger value="files">Files</TabsTrigger>
               <TabsTrigger value="print-queue">Print Queue</TabsTrigger>
               <TabsTrigger value="delivery">Delivery</TabsTrigger>
             </TabsList>
@@ -505,6 +622,166 @@ const Admin = () => {
                       </Card>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="files" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Uploaded Files Management</CardTitle>
+                  <p className="text-sm text-gray-600">View and manage files stored in Amplify Storage with their print settings</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center mb-6">
+                    <Input
+                      placeholder="Search files by name or key..."
+                      value={fileSearchTerm}
+                      onChange={(e) => setFileSearchTerm(e.target.value)}
+                      className="max-w-md"
+                    />
+                    <div className="flex space-x-2">
+                      <Button 
+                        onClick={fetchStorageFiles} 
+                        disabled={loadingFiles}
+                        variant="outline"
+                      >
+                        {loadingFiles ? 'Loading...' : 'Refresh Files'}
+                      </Button>
+                      <Badge variant="secondary">
+                        {filteredFiles.length} files
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {loadingFiles ? (
+                    <div className="text-center py-12">
+                      <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading files from storage...</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredFiles.length === 0 ? (
+                        <div className="text-center py-12">
+                          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-600">No files found in storage</p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Files uploaded through the system will appear here
+                          </p>
+                        </div>
+                      ) : (
+                        filteredFiles.map((file) => (
+                          <Card key={file.key} className="border-l-4 border-l-blue-500">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center space-x-3">
+                                  <FileText className="h-6 w-6 text-blue-500" />
+                                  <div>
+                                    <h3 className="font-semibold text-lg">{file.name}</h3>
+                                    <p className="text-sm text-gray-600">
+                                      {formatFileSize(file.size)} • Uploaded {file.lastModified.toLocaleDateString()}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Storage Key: {file.key}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDownloadFile(file.key)}
+                                    className="flex items-center space-x-1"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                    <span>Download</span>
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteFile(file.key)}
+                                    className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span>Delete</span>
+                                  </Button>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                  <h4 className="font-semibold mb-3 text-gray-800">File Information</h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Uploaded by:</span>
+                                      <span className="font-medium">{file.uploadedBy}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">File size:</span>
+                                      <span className="font-medium">{formatFileSize(file.size)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Upload date:</span>
+                                      <span className="font-medium">{file.lastModified.toLocaleDateString()}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <h4 className="font-semibold mb-3 text-gray-800">Print Settings</h4>
+                                  {file.printSettings ? (
+                                    <div className="space-y-2 text-sm">
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600">Paper size:</span>
+                                        <Badge variant="outline">{file.printSettings.paperSize}</Badge>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600">Print type:</span>
+                                        <Badge variant="outline">{file.printSettings.printType}</Badge>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600">Sides:</span>
+                                        <Badge variant="outline">{file.printSettings.sides}</Badge>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600">Binding:</span>
+                                        <Badge variant="outline">{file.printSettings.binding}</Badge>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600">Copies:</span>
+                                        <Badge variant="outline">{file.printSettings.copies}</Badge>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-4">
+                                      <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                      <p className="text-sm text-gray-600">No print settings configured</p>
+                                      <p className="text-xs text-gray-500">
+                                        Settings will appear when file is processed for printing
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {file.printSettings && (
+                                <div className="mt-4 pt-4 border-t flex justify-end space-x-2">
+                                  <Button variant="outline" size="sm">
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Preview Print
+                                  </Button>
+                                  <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+                                    <Printer className="h-4 w-4 mr-1" />
+                                    Send to Print Queue
+                                  </Button>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
