@@ -10,41 +10,45 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Printer, Check, Clock, Package, FileText, Download, Eye, Trash2 } from 'lucide-react';
 import Navbar from "@/components/Navbar";
-import { apiRequest } from "@/lib/queryClient";
-import { list, getUrl, remove } from 'aws-amplify/storage';
 import { toast } from 'sonner';
-import '../lib/amplify-config';
+import { 
+  usePrintOrders, 
+  useUpdateOrderStatus, 
+  useDeleteOrder, 
+  useFileMetadata, 
+  useDeleteFileMetadata,
+  useGetFileUrl,
+  useDeleteFile 
+} from '@/hooks/useAmplifyData';
+import { storageUtils } from '@/lib/amplify-client';
 
 interface Order {
   id: string;
-  customerName: string;
-  email: string;
-  phone: string;
   files: string[];
+  paperType: string;
+  colorOption: string;
+  printSides: string;
+  binding?: string;
+  quantity: number;
+  totalPages: number;
+  totalPrice: number;
   status: string;
-  totalAmount: number;
-  pages: number;
-  dateCreated: string;
-  printType: string;
-  paperSize: string;
-  sides: string;
-  binding: string;
-  deliveryAddress: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface StorageFile {
-  key: string;
-  name: string;
-  size: number;
-  lastModified: Date;
-  uploadedBy?: string;
-  printSettings?: {
-    paperSize: string;
-    printType: string;
-    sides: string;
-    binding: string;
-    copies: number;
-  };
+  id: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  s3Key: string;
+  pageCount?: number;
+  orderId?: string;
+  uploadedAt?: string;
 }
 
 interface Stats {
@@ -57,8 +61,6 @@ interface Stats {
 const Admin = () => {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [storageFiles, setStorageFiles] = useState<StorageFile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [fileSearchTerm, setFileSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
@@ -66,7 +68,16 @@ const Admin = () => {
   const [loginMobile, setLoginMobile] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
-  const [loadingFiles, setLoadingFiles] = useState(false);
+
+  // Use Amplify hooks for data fetching
+  const { data: orders = [], isLoading: ordersLoading, refetch: refetchOrders } = usePrintOrders();
+  const { data: fileMetadata = [], isLoading: filesLoading, refetch: refetchFiles } = useFileMetadata();
+  const updateOrderStatusMutation = useUpdateOrderStatus();
+  const deleteOrderMutation = useDeleteOrder();
+  const deleteFileMutation = useDeleteFile();
+  const deleteFileMetadataMutation = useDeleteFileMetadata();
+  const getFileUrlMutation = useGetFileUrl();
+
   const [stats, setStats] = useState<Stats>({
     totalOrders: 0,
     pendingOrders: 0,
@@ -81,99 +92,72 @@ const Admin = () => {
     }
   }, []);
 
+  // Calculate stats when orders data changes
   useEffect(() => {
-    // Only fetch orders and files if authenticated
-    if (isAuthenticated) {
-      fetchOrders();
-      fetchStorageFiles();
+    if (orders.length > 0) {
+      calculateStats(orders.map(order => ({
+        ...order,
+        files: order.files || [],
+        totalPrice: order.totalPrice || 0
+      })));
     }
-  }, [isAuthenticated]);
+  }, [orders]);
 
-  const fetchOrders = async () => {
+  // Handle order status updates
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      const ordersData = await apiRequest('/api/orders');
-      const formattedOrders = ordersData.map((order: any) => ({
-        id: order.id.toString(),
-        customerName: order.customerName,
-        email: order.email,
-        phone: order.phone,
-        files: order.fileNames || [],
-        status: order.status?.toLowerCase() || 'pending',
-        totalAmount: parseFloat(order.totalAmount),
-        pages: order.totalPages,
-        dateCreated: new Date(order.createdAt).toLocaleDateString(),
-        printType: order.printType.replace('_', ' ').toLowerCase(),
-        paperSize: order.paperSize,
-        sides: order.sides.toLowerCase(),
-        binding: order.binding?.toLowerCase() || 'none',
-        deliveryAddress: order.deliveryAddress
-      }));
-      
-      setOrders(formattedOrders);
-      calculateStats(formattedOrders);
+      await updateOrderStatusMutation.mutateAsync({ id: orderId, status: newStatus });
+      toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      // Fallback to sample data if API fails
-      loadSampleOrders();
+      console.error('Error updating order status:', error);
+      toast.error('Failed to update order status');
     }
   };
 
-  const fetchStorageFiles = async () => {
-    setLoadingFiles(true);
-    try {
-      // Fetch files from Amplify Storage
-      const result = await list({ prefix: 'documents/' });
-      
-      const filesWithMetadata = await Promise.all(
-        result.items.map(async (item) => {
-          try {
-            // Get print settings from localStorage if available
-            const storedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
-            const matchingFile = storedFiles.find((f: any) => f.key === item.key);
-            
-            return {
-              key: item.key,
-              name: item.key.split('/').pop() || item.key,
-              size: item.size || 0,
-              lastModified: item.lastModified || new Date(),
-              uploadedBy: matchingFile?.uploadedBy || 'Unknown',
-              printSettings: matchingFile?.printSettings || null
-            };
-          } catch (error) {
-            console.error('Error processing file:', item.key, error);
-            return {
-              key: item.key,
-              name: item.key.split('/').pop() || item.key,
-              size: item.size || 0,
-              lastModified: item.lastModified || new Date(),
-              uploadedBy: 'Unknown',
-              printSettings: null
-            };
-          }
-        })
-      );
-
-      setStorageFiles(filesWithMetadata);
-    } catch (error) {
-      console.error('Error fetching storage files:', error);
-      // Fallback to localStorage files if Amplify fails
+  // Handle order deletion
+  const handleDeleteOrder = async (orderId: string) => {
+    if (confirm('Are you sure you want to delete this order?')) {
       try {
-        const storedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
-        const localFiles = storedFiles.map((file: any) => ({
-          key: file.key || file.name,
-          name: file.name,
-          size: file.size || 0,
-          lastModified: new Date(file.uploadDate || Date.now()),
-          uploadedBy: 'Local Storage',
-          printSettings: file.printSettings || null
-        }));
-        setStorageFiles(localFiles);
-      } catch (localError) {
-        console.error('Error loading local files:', localError);
-        setStorageFiles([]);
+        await deleteOrderMutation.mutateAsync(orderId);
+        toast.success('Order deleted successfully');
+      } catch (error) {
+        console.error('Error deleting order:', error);
+        toast.error('Failed to delete order');
       }
     }
-    setLoadingFiles(false);
+  };
+
+  // Handle file download
+  const handleDownloadFile = async (s3Key: string, fileName: string) => {
+    try {
+      const url = await getFileUrlMutation.mutateAsync(s3Key);
+      const link = document.createElement('a');
+      link.href = url.toString();
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('File download started');
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast.error('Failed to download file');
+    }
+  };
+
+  // Handle file deletion
+  const handleDeleteFile = async (fileId: string, s3Key: string) => {
+    if (confirm('Are you sure you want to delete this file?')) {
+      try {
+        // Delete from S3
+        await deleteFileMutation.mutateAsync(s3Key);
+        // Delete metadata from DynamoDB
+        await deleteFileMetadataMutation.mutateAsync(fileId);
+        toast.success('File deleted successfully');
+      } catch (error) {
+        console.error('Error deleting file:', error);
+        toast.error('Failed to delete file');
+      }
+    }
   };
 
   const calculateStats = (ordersData: Order[]) => {
@@ -181,65 +165,9 @@ const Admin = () => {
       totalOrders: ordersData.length,
       pendingOrders: ordersData.filter(order => order.status === 'pending').length,
       inProgressOrders: ordersData.filter(order => order.status === 'processing' || order.status === 'printing').length,
-      totalRevenue: ordersData.reduce((sum, order) => sum + order.totalAmount, 0)
+      totalRevenue: ordersData.reduce((sum, order) => sum + order.totalPrice, 0)
     };
     setStats(stats);
-  };
-
-  const loadSampleOrders = () => {
-    const sampleOrders: Order[] = [
-      {
-        id: 'ORD-001',
-        customerName: 'Arjun Kumar',
-        email: 'arjun@example.com',
-        phone: '+91 9876543210',
-        files: ['Resume.pdf'],
-        status: 'delivered',
-        totalAmount: 125.50, // INR pricing
-        pages: 3,
-        dateCreated: '2025-01-15',
-        printType: 'color',
-        paperSize: 'A4',
-        sides: 'single',
-        binding: 'none',
-        deliveryAddress: 'KIIT University, Bhubaneswar, Odisha'
-      },
-      {
-        id: 'ORD-002',
-        customerName: 'Priya Sharma',
-        email: 'priya@example.com',
-        phone: '+91 8765432109',
-        files: ['Presentation.pdf', 'Handouts.pdf'],
-        status: 'printing',
-        totalAmount: 350.75, // INR pricing
-        pages: 25,
-        dateCreated: '2025-01-16',
-        printType: 'color',
-        paperSize: 'A4',
-        sides: 'double',
-        binding: 'spiral',
-        deliveryAddress: 'CUTM Bhubaneswar, Odisha'
-      },
-      {
-        id: 'ORD-003',
-        customerName: 'Rohit Patel',
-        email: 'rohit@example.com',
-        phone: '+91 7654321098',
-        files: ['Document.pdf'],
-        status: 'pending',
-        totalAmount: 95.00, // INR pricing
-        pages: 8,
-        dateCreated: '2025-01-17',
-        printType: 'black_white',
-        paperSize: 'A4',
-        sides: 'single',
-        binding: 'none',
-        deliveryAddress: 'SOA University, Bhubaneswar, Odisha'
-      }
-    ];
-
-    setOrders(sampleOrders);
-    calculateStats(sampleOrders);
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -265,66 +193,19 @@ const Admin = () => {
     }, 1000);
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    try {
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update order status');
-      }
-
-      // Update local state
-      const updatedOrders = orders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
-      );
-      setOrders(updatedOrders);
-      calculateStats(updatedOrders);
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      alert('Failed to update order status. Please try again.');
-    }
-  };
-
+  // Filter orders based on search and status
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = (order.customerEmail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'All Status' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const filteredFiles = storageFiles.filter(file => 
-    file.name.toLowerCase().includes(fileSearchTerm.toLowerCase()) ||
-    file.key.toLowerCase().includes(fileSearchTerm.toLowerCase())
+  // Filter files based on search
+  const filteredFiles = fileMetadata.filter(file => 
+    file.fileName.toLowerCase().includes(fileSearchTerm.toLowerCase()) ||
+    file.s3Key.toLowerCase().includes(fileSearchTerm.toLowerCase())
   );
-
-  const handleDownloadFile = async (fileKey: string) => {
-    try {
-      const downloadUrl = await getUrl({ key: fileKey });
-      window.open(downloadUrl.url.toString(), '_blank');
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      toast.error('Failed to download file');
-    }
-  };
-
-  const handleDeleteFile = async (fileKey: string) => {
-    if (!confirm('Are you sure you want to delete this file?')) return;
-    
-    try {
-      await remove({ key: fileKey });
-      setStorageFiles(prev => prev.filter(file => file.key !== fileKey));
-      toast.success('File deleted successfully');
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      toast.error('Failed to delete file');
-    }
-  };
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';

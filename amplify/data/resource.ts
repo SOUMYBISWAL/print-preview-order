@@ -1,15 +1,52 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any unauthenticated user can "create", "read", "update", 
-and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a.schema({
-  Todo: a
+  // Print Orders table
+  PrintOrder: a
     .model({
-      content: a.string(),
+      id: a.id().required(),
+      files: a.string().array(), // File keys from S3 storage
+      paperType: a.string().required(),
+      colorOption: a.string().required(),
+      printSides: a.string().required(),
+      binding: a.string(),
+      quantity: a.integer().required(),
+      totalPages: a.integer().required(),
+      totalPrice: a.float().required(),
+      status: a.string().default('pending'),
+      customerEmail: a.string(),
+      customerPhone: a.string(),
+      notes: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+    })
+    .authorization((allow) => [allow.guest()]),
+
+  // File Metadata table
+  FileMetadata: a
+    .model({
+      id: a.id().required(),
+      fileName: a.string().required(),
+      fileSize: a.integer().required(),
+      fileType: a.string().required(),
+      s3Key: a.string().required(),
+      pageCount: a.integer(),
+      orderId: a.id(),
+      uploadedAt: a.datetime(),
+    })
+    .authorization((allow) => [allow.guest()]),
+
+  // Print Settings template
+  PrintSettings: a
+    .model({
+      id: a.id().required(),
+      name: a.string().required(),
+      paperType: a.string().required(),
+      colorOption: a.string().required(),
+      printSides: a.string().required(),
+      binding: a.string(),
+      isDefault: a.boolean().default(false),
+      createdAt: a.datetime(),
     })
     .authorization((allow) => [allow.guest()]),
 });
