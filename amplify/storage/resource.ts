@@ -1,7 +1,7 @@
 import { defineStorage } from '@aws-amplify/backend';
 
 export const storage = defineStorage({
-  name: 'amplifyTeamDrive',
+  name: 'userfiles', // Add a unique name for your storage resource
   access: [
     {
       allow: 'authenticated',
