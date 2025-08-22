@@ -1,4 +1,6 @@
-import { useState } from "react";
+import React, { useState } from 'react';
+import { Storage } from 'aws-amplify';
+import { StorageManager } from '@aws-amplify/ui-react-storage';
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,7 +42,19 @@ const Upload = () => {
     }
   };
 
+  // For admin: list files
+  const [files, setFiles] = useState<string[]>([]);
 
+  const listFiles = async () => {
+    const result = await Storage.list('');
+    setFiles(result.results.map((item: any) => item.key));
+  };
+
+  // For admin: download/print file
+  const downloadFile = async (key: string) => {
+    const url = await Storage.get(key);
+    window.open(url, '_blank');
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -78,6 +92,23 @@ const Upload = () => {
               Cancel
             </Button>
           </div>
+
+          {/* Admin section */}
+          <hr className="my-8" />
+          <h3 className="text-2xl font-bold mb-4">Admin: Print Files</h3>
+          <Button onClick={listFiles} className="mb-4">
+            Refresh File List
+          </Button>
+          <ul className="list-disc list-inside">
+            {files.map((key) => (
+              <li key={key} className="flex justify-between items-center py-2">
+                <span className="text-lg">{key}</span>
+                <Button onClick={() => downloadFile(key)} variant="outline">
+                  Print/Download
+                </Button>
+              </li>
+            ))}
+          </ul>
         </div>
       </main>
       
