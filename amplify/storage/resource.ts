@@ -1,7 +1,7 @@
 import { defineStorage } from '@aws-amplify/backend';
 
 export const storage = defineStorage({
-  name: 'userfiles', // Add a unique name for your storage resource
+  name: 'userfiles', // Use only lowercase, numbers, and hyphens
   access: [
     {
       allow: 'authenticated',
