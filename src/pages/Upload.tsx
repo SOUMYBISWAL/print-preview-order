@@ -44,16 +44,29 @@ const Upload = () => {
 
   // For admin: list files
   const [files, setFiles] = useState<string[]>([]);
+  const [adminError, setAdminError] = useState<string | null>(null);
 
   const listFiles = async () => {
-    const result = await Storage.list('');
-    setFiles(result.results.map((item: any) => item.key));
+    setAdminError(null);
+    try {
+      const result = await Storage.list('');
+      setFiles(result.results.map((item: any) => item.key));
+    } catch (err: any) {
+      setAdminError(err.message || "Failed to list files.");
+      toast.error(adminError || "Failed to list files.");
+    }
   };
 
   // For admin: download/print file
   const downloadFile = async (key: string) => {
-    const url = await Storage.get(key);
-    window.open(url, '_blank');
+    setAdminError(null);
+    try {
+      const url = await Storage.get(key);
+      window.open(url, '_blank');
+    } catch (err: any) {
+      setAdminError(err.message || "Failed to download file.");
+      toast.error(adminError || "Failed to download file.");
+    }
   };
 
   return (
@@ -99,6 +112,9 @@ const Upload = () => {
           <Button onClick={listFiles} className="mb-4">
             Refresh File List
           </Button>
+          {adminError && (
+            <div className="text-red-600 mb-4">{adminError}</div>
+          )}
           <ul className="list-disc list-inside">
             {files.map((key) => (
               <li key={key} className="flex justify-between items-center py-2">
