@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Storage } from 'aws-amplify';
+import { list, get } from '@aws-amplify/storage';
 import { StorageManager } from '@aws-amplify/ui-react-storage';
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -49,8 +49,8 @@ const Upload = () => {
   const listFiles = async () => {
     setAdminError(null);
     try {
-      const result = await Storage.list('');
-      setFiles(result.results.map((item: any) => item.key));
+      const result = await list({ path: '' });
+      setFiles(result.items.map((item: any) => item.key));
     } catch (err: any) {
       setAdminError(err.message || "Failed to list files.");
       toast.error(adminError || "Failed to list files.");
@@ -61,8 +61,8 @@ const Upload = () => {
   const downloadFile = async (key: string) => {
     setAdminError(null);
     try {
-      const url = await Storage.get(key);
-      window.open(url, '_blank');
+      const url = await get({ key });
+      window.open(url.url, '_blank');
     } catch (err: any) {
       setAdminError(err.message || "Failed to download file.");
       toast.error(adminError || "Failed to download file.");
