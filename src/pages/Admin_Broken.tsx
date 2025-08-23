@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Printer, Check, Clock, Package, FileText, Download, Eye, Trash2 } from 'lucide-react';
 import Navbar from "@/components/Navbar";
 import { toast } from 'sonner';
+import { Auth } from 'aws-amplify';
 
 interface Order {
   id: string;
@@ -76,6 +77,12 @@ const Admin = () => {
     if (user.isAdmin) {
       setIsAuthenticated(true);
     }
+  }, []);
+
+  useEffect(() => {
+    Auth.currentAuthenticatedUser()
+      .then(() => setIsAuthenticated(true))
+      .catch(() => setIsAuthenticated(false));
   }, []);
 
   // Calculate stats when orders data changes
@@ -156,27 +163,20 @@ const Admin = () => {
     setStats(stats);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     setLoggingIn(true);
-    
-    setTimeout(() => {
-      // Admin credentials check
-      if (loginMobile === "9999999999" && loginPassword === "admin123") {
-        const user = {
-          mobile: loginMobile,
-          name: "Admin",
-          isLoggedIn: true,
-          isAdmin: true
-        };
-        localStorage.setItem('user', JSON.stringify(user));
-        setIsAuthenticated(true);
-        window.dispatchEvent(new Event('userStateChanged'));
-      } else {
-        alert('Invalid admin credentials');
-      }
-      setLoggingIn(false);
-    }, 1000);
+    try {
+      await Auth.signIn(loginMobile, loginPassword);
+      setIsAuthenticated(true);
+    } catch (err) {
+      setIsAuthenticated(false);
+    }
+    setLoggingIn(false);
+  };
+
+  const handleLogout = async () => {
+    await Auth.signOut();
+    setIsAuthenticated(false);
   };
 
   // Filter orders based on search and status
