@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { list, getUrl } from '@aws-amplify/storage';
-import { StorageManager } from '@aws-amplify/ui-react-storage';
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,32 +40,6 @@ const Upload = () => {
     }
   };
 
-  // For admin: list files
-  const [files, setFiles] = useState<string[]>([]);
-  const [adminError, setAdminError] = useState<string | null>(null);
-
-  const listFiles = async () => {
-    setAdminError(null);
-    try {
-      const result = await list({ path: '' });
-      setFiles(result.items.map((item: any) => item.key));
-    } catch (err: any) {
-      setAdminError(err.message || "Failed to list files.");
-      toast.error(adminError || "Failed to list files.");
-    }
-  };
-
-  // For admin: download/print file
-  const downloadFile = async (key: string) => {
-    setAdminError(null);
-    try {
-      const { url } = await getUrl({ key });
-      window.open(url, '_blank');
-    } catch (err: any) {
-      setAdminError(err.message || "Failed to download file.");
-      toast.error(adminError || "Failed to download file.");
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -106,25 +78,6 @@ const Upload = () => {
             </Button>
           </div>
 
-          {/* Admin section */}
-          <hr className="my-8" />
-          <h3 className="text-2xl font-bold mb-4">Admin: Print Files</h3>
-          <Button onClick={listFiles} className="mb-4">
-            Refresh File List
-          </Button>
-          {adminError && (
-            <div className="text-red-600 mb-4">{adminError}</div>
-          )}
-          <ul className="list-disc list-inside">
-            {files.map((key) => (
-              <li key={key} className="flex justify-between items-center py-2">
-                <span className="text-lg">{key}</span>
-                <Button onClick={() => downloadFile(key)} variant="outline">
-                  Print/Download
-                </Button>
-              </li>
-            ))}
-          </ul>
         </div>
       </main>
       
