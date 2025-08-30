@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import LocalFileUploader from "@/components/LocalFileUploader";
+import AmplifyFileUploader from "@/components/AmplifyFileUploader";
 
 const Upload = () => {
   const [, setLocation] = useLocation();
@@ -49,8 +49,8 @@ const Upload = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Upload Your Files</h1>
           
-          {/* Local File Upload Component (AWS Storage temporarily unavailable) */}
-          <LocalFileUploader onFilesUploaded={handleFilesUploaded} />
+          {/* AWS Amplify File Upload Component */}
+          <AmplifyFileUploader onFilesUploaded={handleFilesUploaded} />
 
           {uploadedFiles.length > 0 && (
             <Card className="mb-6 mt-6">
