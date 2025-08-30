@@ -1,0 +1,135 @@
+26
+
+2025-08-30T12:08:41.803Z [INFO]: # Retrieved cache
+
+27
+
+2025-08-30T12:08:45.604Z [INFO]: ## Starting Backend Build
+
+28
+
+                                 # Starting phase: build
+
+29
+
+                                 # Executing command: npm ci --cache .npm --prefer-offline
+
+30
+
+2025-08-30T12:09:11.329Z [WARNING]: npm warn EBADENGINE Unsupported engine {
+
+31
+
+                                    npm warn EBADENGINE   package: '@isaacs/balanced-match@4.0.1',
+
+32
+
+                                    npm warn EBADENGINE   required: { node: '20 || >=22' },
+
+33
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+34
+
+                                    npm warn EBADENGINE }
+
+35
+
+2025-08-30T12:09:11.335Z [WARNING]: npm warn EBADENGINE Unsupported engine {
+
+36
+
+                                    npm warn EBADENGINE   package: '@isaacs/brace-expansion@5.0.0',
+
+37
+
+                                    npm warn EBADENGINE   required: { node: '20 || >=22' },
+
+38
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+39
+
+                                    npm warn EBADENGINE }
+
+40
+
+                                    npm warn EBADENGINE Unsupported engine {
+
+41
+
+                                    npm warn EBADENGINE   package: 'glob@11.0.3',
+
+42
+
+                                    npm warn EBADENGINE   required: { node: '20 || >=22' },
+
+43
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+44
+
+                                    npm warn EBADENGINE }
+
+45
+
+                                    npm warn EBADENGINE Unsupported engine {
+
+46
+
+                                    npm warn EBADENGINE   package: 'minimatch@10.0.3',
+
+47
+
+                                    npm warn EBADENGINE   required: { node: '20 || >=22' },
+
+48
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+49
+
+                                    npm warn EBADENGINE }
+
+50
+
+                                    npm warn EBADENGINE Unsupported engine {
+
+51
+
+                                    npm warn EBADENGINE   package: 'jackspeak@4.1.1',
+
+52
+
+                                    npm warn EBADENGINE   required: { node: '20 || >=22' },
+
+53
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+54
+
+                                    npm warn EBADENGINE }
+
+55
+
+                                    npm warn EBADENGINE Unsupported engine {
+
+56
+
+                                    npm warn EBADENGINE   package: 'minimatch@10.0.1',
+
+57
+
+                                    npm warn EBADENGINE   required: { node: '20 || >=22' },
+
+58
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+59
+
+                                    npm warn EBADENGINE }

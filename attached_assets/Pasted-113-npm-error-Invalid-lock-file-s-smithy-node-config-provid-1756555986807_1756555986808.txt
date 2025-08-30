@@ -1,0 +1,139 @@
+113
+
+                                    npm error Invalid: lock file's @smithy/node-config-provider@4.0.2 does not satisfy @smithy/node-config-provider@4.1.4
+
+114
+
+                                    npm error Invalid: lock file's @smithy/types@4.3.1 does not satisfy @smithy/types@4.3.2
+
+115
+
+                                    npm error Invalid: lock file's @smithy/util-middleware@4.0.2 does not satisfy @smithy/util-middleware@4.0.5
+
+116
+
+                                    npm error Invalid: lock file's @smithy/property-provider@4.0.2 does not satisfy @smithy/property-provider@4.0.5
+
+117
+
+                                    npm error Invalid: lock file's @smithy/shared-ini-file-loader@4.0.2 does not satisfy @smithy/shared-ini-file-loader@4.0.5
+
+118
+
+                                    npm error Missing: @smithy/abort-controller@4.0.5 from lock file
+
+119
+
+                                    npm error Missing: @aws-cdk/toolkit-lib@0.3.2 from lock file
+
+120
+
+                                    npm error Missing: @aws-cdk/cloud-assembly-schema@43.12.0 from lock file
+
+121
+
+                                    npm error Missing: @aws-cdk/region-info@2.213.0 from lock file
+
+122
+
+                                    npm error Missing: @smithy/middleware-endpoint@4.1.19 from lock file
+
+123
+
+                                    npm error Missing: @smithy/node-http-handler@4.1.1 from lock file
+
+124
+
+                                    npm error Missing: @smithy/property-provider@4.0.5 from lock file
+
+125
+
+                                    npm error Missing: @smithy/shared-ini-file-loader@4.0.5 from lock file
+
+126
+
+                                    npm error Missing: @smithy/util-retry@4.0.7 from lock file
+
+127
+
+                                    npm error Missing: @smithy/util-stream@4.2.4 from lock file
+
+128
+
+                                    npm error Missing: camelcase@6.3.0 from lock file
+
+129
+
+                                    npm error Missing: cdk-from-cfn@0.210.0 from lock file
+
+130
+
+                                    npm error Missing: chalk@4.1.2 from lock file
+
+131
+
+                                    npm error Missing: decamelize@5.0.1 from lock file
+
+132
+
+                                    npm error Missing: fs-extra@9.1.0 from lock file
+
+133
+
+                                    npm error Missing: json-diff@1.0.6 from lock file
+
+134
+
+                                    npm error Missing: promptly@3.2.0 from lock file
+
+135
+
+                                    npm error Missing: proxy-agent@6.5.0 from lock file
+
+136
+
+                                    npm error Missing: strip-ansi@6.0.1 from lock file
+
+137
+
+                                    npm error Missing: uuid@11.1.0 from lock file
+
+138
+
+                                    npm error Missing: wrap-ansi@7.0.0 from lock file
+
+139
+
+                                    npm error Missing: yargs@15.4.1 from lock file
+
+140
+
+                                    npm error Missing: @ewoudenberg/difflib@0.1.0 from lock file
+
+141
+
+                                    npm error Missing: colors@1.4.0 from lock file
+
+142
+
+                                    npm error Missing: dreamopt@0.8.0 from lock file
+
+143
+
+                                    npm error Missing: heap@0.2.7 from lock file
+
+144
+
+                                    npm error Missing: read@1.0.7 from lock file
+
+145
+
+                                    npm error Missing: agent-base@7.1.4 from lock file
+
+146
+
+                                    npm error Missing: http-proxy-agent@7.0.2 from lock file
+
+147
+
+                                    npm error Missing: https-proxy-agent@7.0.6 from lock f

@@ -1,0 +1,151 @@
+62
+
+                                    npm warn EBADENGINE   required: { node: '20 || >=22' },
+
+63
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+64
+
+                                    npm warn EBADENGINE }
+
+65
+
+2025-08-30T12:09:11.336Z [WARNING]: npm warn EBADENGINE Unsupported engine {
+
+66
+
+                                    npm warn EBADENGINE   package: 'lru-cache@11.1.0',
+
+67
+
+                                    npm warn EBADENGINE   required: { node: '20 || >=22' },
+
+68
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+69
+
+                                    npm warn EBADENGINE }
+
+70
+
+2025-08-30T12:09:11.336Z [WARNING]: npm warn EBADENGINE Unsupported engine {
+
+71
+
+                                    npm warn EBADENGINE   package: 'react-router@7.8.2',
+
+72
+
+                                    npm warn EBADENGINE   required: { node: '>=20.0.0' },
+
+73
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+74
+
+                                    npm warn EBADENGINE }
+
+75
+
+2025-08-30T12:09:11.337Z [WARNING]: npm warn EBADENGINE Unsupported engine {
+
+76
+
+                                    npm warn EBADENGINE   package: 'react-router-dom@7.8.2',
+
+77
+
+                                    npm warn EBADENGINE   required: { node: '>=20.0.0' },
+
+78
+
+                                    npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+
+79
+
+                                    npm warn EBADENGINE }
+
+80
+
+2025-08-30T12:09:11.380Z [WARNING]: npm error code EUSAGE
+
+81
+
+2025-08-30T12:09:11.380Z [WARNING]: npm error
+
+82
+
+                                    npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+
+83
+
+                                    npm error
+
+84
+
+                                    npm error Missing: @parcel/watcher-android-arm64@2.5.1 from lock file
+
+85
+
+                                    npm error Missing: @parcel/watcher-darwin-arm64@2.5.1 from lock file
+
+86
+
+                                    npm error Missing: @parcel/watcher-darwin-x64@2.5.1 from lock file
+
+87
+
+                                    npm error Missing: @parcel/watcher-freebsd-x64@2.5.1 from lock file
+
+88
+
+                                    npm error Missing: @parcel/watcher-linux-arm-glibc@2.5.1 from lock file
+
+89
+
+                                    npm error Missing: @parcel/watcher-linux-arm-musl@2.5.1 from lock file
+
+90
+
+                                    npm error Missing: @parcel/watcher-linux-arm64-glibc@2.5.1 from lock file
+
+91
+
+                                    npm error Missing: @parcel/watcher-linux-arm64-musl@2.5.1 from lock file
+
+92
+
+                                    npm error Missing: @parcel/watcher-linux-x64-musl@2.5.1 from lock file
+
+93
+
+                                    npm error Missing: @parcel/watcher-win32-arm64@2.5.1 from lock file
+
+94
+
+                                    npm error Missing: @parcel/watcher-win32-ia32@2.5.1 from lock file
+
+95
+
+                                    npm error Missing: @parcel/watcher-win32-x64@2.5.1 from lock file
+
+96
+
+                                    npm error Missing: @aws-sdk/core@3.775.0 from lock file
+
+97
+
+                                    npm error Missing: @aws-sdk/middleware-host-header@3.775.0 from lock file
+
+98
+
+                                    npm error Missing: @aws-sdk/middleware-logger@3.775.0 from lock file
+
+99
+
+                                    npm error Missing: @aws-sdk/middleware-recursion-detection@3.775.0 from lock file

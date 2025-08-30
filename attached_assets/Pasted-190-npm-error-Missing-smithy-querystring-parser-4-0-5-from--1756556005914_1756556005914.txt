@@ -1,0 +1,134 @@
+190
+
+                                    npm error Missing: @smithy/querystring-parser@4.0.5 from lock file
+
+191
+
+                                    npm error Missing: @smithy/util-buffer-from@4.0.0 from lock file
+
+192
+
+                                    npm error Missing: @smithy/is-array-buffer@4.0.0 from lock file
+
+193
+
+                                    npm error Missing: @smithy/service-error-classification@4.0.7 from lock file
+
+194
+
+                                    npm error Missing: @smithy/fetch-http-handler@5.1.1 from lock file
+
+195
+
+                                    npm error Missing: @smithy/util-hex-encoding@4.0.0 from lock file
+
+196
+
+                                    npm error Missing: jsonfile@6.2.0 from lock file
+
+197
+
+                                    npm error Missing: universalify@2.0.1 from lock file
+
+198
+
+                                    npm error
+
+199
+
+                                    npm error Clean install a project
+
+200
+
+                                    npm error
+
+201
+
+                                    npm error Usage:
+
+202
+
+                                    npm error npm ci
+
+203
+
+                                    npm error
+
+204
+
+                                    npm error Options:
+
+205
+
+                                    npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+
+206
+
+                                    npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+
+207
+
+                                    npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+
+208
+
+                                    npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+
+209
+
+                                    npm error [--no-bin-links] [--no-fund] [--dry-run]
+
+210
+
+                                    npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+
+211
+
+                                    npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+
+212
+
+                                    npm error
+
+213
+
+                                    npm error aliases: clean-install, ic, install-clean, isntall-clean
+
+214
+
+                                    npm error
+
+215
+
+                                    npm error Run "npm help ci" for more info
+
+216
+
+2025-08-30T12:09:11.381Z [WARNING]: npm error A complete log of this run can be found in: /codebuild/output/src3201310736/src/print-preview-order/.npm/_logs/2025-08-30T12_08_49_096Z-debug-0.log
+
+217
+
+2025-08-30T12:09:11.422Z [ERROR]: !!! Build failed
+
+218
+
+2025-08-30T12:09:11.423Z [ERROR]: !!! Error: Command failed with exit code 1
+
+219
+
+2025-08-30T12:09:11.423Z [INFO]: # Starting environment caching...
+
+220
+
+2025-08-30T12:09:11.423Z [INFO]: # Uploading environment cache artifact...
+
+221
+
+2025-08-30T12:09:11.511Z [INFO]: # Uploaded environment cache artifact
+
+222
+
+2025-08-30T12:09:11.511Z [INFO]: # Environment caching completed
+
+223
+
