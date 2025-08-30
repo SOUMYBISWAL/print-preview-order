@@ -1,15 +1,30 @@
 version: 1
 backend:
   phases:
+    preBuild:
+      commands:
+        - nvm install 20
+        - nvm use 20
+        - nvm alias default 20
+        - node --version
+        - npm --version
+        - echo "Using Node.js $(node --version) and npm $(npm --version)"
     build:
       commands:
-        - npm ci --cache .npm --prefer-offline
+        - rm -rf node_modules package-lock.json
+        - npm install --legacy-peer-deps --no-fund --no-audit
 frontend:
   phases:
     preBuild:
       commands:
-        - nvm use 20
-        - npm ci --cache .npm --prefer-offline
+        - nvm install 20
+        - nvm use 20 
+        - nvm alias default 20
+        - node --version
+        - npm --version
+        - echo "Using Node.js $(node --version) and npm $(npm --version)"
+        - rm -rf node_modules package-lock.json
+        - npm install --legacy-peer-deps --no-fund --no-audit
     build:
       commands:
         - npm run build
@@ -20,4 +35,3 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
-      - .npm/**/*

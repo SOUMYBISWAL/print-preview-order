@@ -1,0 +1,155 @@
+84
+
+                                    npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+
+85
+
+                                    npm error
+
+86
+
+                                    npm error Missing: @aws-sdk/core@3.775.0 from lock file
+
+87
+
+                                    npm error Missing: @aws-sdk/middleware-host-header@3.775.0 from lock file
+
+88
+
+                                    npm error Missing: @aws-sdk/middleware-logger@3.775.0 from lock file
+
+89
+
+                                    npm error Missing: @aws-sdk/middleware-recursion-detection@3.775.0 from lock file
+
+90
+
+                                    npm error Missing: @aws-sdk/middleware-user-agent@3.775.0 from lock file
+
+91
+
+                                    npm error Missing: @aws-sdk/region-config-resolver@3.775.0 from lock file
+
+92
+
+                                    npm error Missing: @aws-sdk/types@3.775.0 from lock file
+
+93
+
+                                    npm error Missing: @aws-sdk/util-endpoints@3.775.0 from lock file
+
+94
+
+                                    npm error Missing: @aws-sdk/util-user-agent-browser@3.775.0 from lock file
+
+95
+
+                                    npm error Missing: @aws-sdk/util-user-agent-node@3.775.0 from lock file
+
+96
+
+                                    npm error Missing: @smithy/config-resolver@4.1.5 from lock file
+
+97
+
+                                    npm error Invalid: lock file's @smithy/node-config-provider@4.0.2 does not satisfy @smithy/node-config-provider@4.1.4
+
+98
+
+                                    npm error Invalid: lock file's @smithy/types@4.3.1 does not satisfy @smithy/types@4.3.2
+
+99
+
+                                    npm error Invalid: lock file's @smithy/util-middleware@4.0.2 does not satisfy @smithy/util-middleware@4.0.5
+
+100
+
+                                    npm error Invalid: lock file's @smithy/property-provider@4.0.2 does not satisfy @smithy/property-provider@4.0.5
+
+101
+
+                                    npm error Invalid: lock file's @smithy/shared-ini-file-loader@4.0.2 does not satisfy @smithy/shared-ini-file-loader@4.0.5
+
+102
+
+                                    npm error Missing: @smithy/abort-controller@4.0.5 from lock file
+
+103
+
+                                    npm error
+
+104
+
+                                    npm error Clean install a project
+
+105
+
+                                    npm error
+
+106
+
+                                    npm error Usage:
+
+107
+
+                                    npm error npm ci
+
+108
+
+                                    npm error
+
+109
+
+                                    npm error Options:
+
+110
+
+                                    npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+
+111
+
+                                    npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+
+112
+
+                                    npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+
+113
+
+                                    npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+
+114
+
+                                    npm error [--no-bin-links] [--no-fund] [--dry-run]
+
+115
+
+                                    npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+
+116
+
+                                    npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+
+117
+
+                                    npm error
+
+118
+
+                                    npm error aliases: clean-install, ic, install-clean, isntall-clean
+
+119
+
+                                    npm error
+
+120
+
+                                    npm error Run "npm help ci" for more info
+
+121
+
+2025-08-30T12:17:03.556Z [WARNING]: npm error A complete log of this run can be found in: /codebuild/output/src1907936628/src/print-preview-order/.npm/_logs/2025-08-30T12_16_49_808Z-debug-0.log
+
+122
+
+2025-08-30T12:17:03.628Z [ERROR]: !!! Build failed
