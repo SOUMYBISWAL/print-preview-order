@@ -115,13 +115,13 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
 
   const uploadToAmplify = async (fileData: UploadedFile) => {
     try {
-      // Generate unique file key for S3
+      // Generate unique file key for S3 using Amplify Gen2 best practices
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substr(2, 9);
       const fileExtension = fileData.file.name.split('.').pop();
-      const fileKey = `uploads/${timestamp}-${randomId}.${fileExtension}`;
+      const fileKey = `public/documents/${timestamp}-${randomId}.${fileExtension}`;
 
-      // Upload to S3 using Amplify Storage
+      // Upload to S3 using Amplify Gen2 Storage
       const result = await uploadData({
         key: fileKey,
         data: fileData.file,
@@ -151,25 +151,26 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
         )
       );
 
-      // Store file reference for the upload process
-      const completedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+      // Store file reference in sessionStorage (temporary for current session)
+      const completedFiles = JSON.parse(sessionStorage.getItem('amplifyUploadedFiles') || '[]');
       const newFile = {
         key: fileKey,
         name: fileData.name,
         size: fileData.size,
         type: fileData.type,
-        pages: fileData.pages
+        pages: fileData.pages,
+        uploadedAt: new Date().toISOString()
       };
       completedFiles.push(newFile);
-      localStorage.setItem('uploadedFiles', JSON.stringify(completedFiles));
+      sessionStorage.setItem('amplifyUploadedFiles', JSON.stringify(completedFiles));
 
       // Notify parent component
       onFilesUploaded([newFile]);
 
-      toast.success(`${fileData.name} uploaded successfully to AWS S3! (${fileData.pages} page${fileData.pages > 1 ? 's' : ''})`);
+      toast.success(`${fileData.name} uploaded successfully to Amplify Storage! (${fileData.pages} page${fileData.pages > 1 ? 's' : ''})`);
       
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error('Amplify upload failed:', error);
       
       // Mark as error
       setUploadedFiles(prev => 
@@ -180,33 +181,7 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
         )
       );
 
-      // Fallback to localStorage if AWS upload fails
-      toast.error(`AWS upload failed for ${fileData.name}. Falling back to local storage.`);
-      
-      // Create local fallback
-      const fileKey = `local-${fileData.id}`;
-      const completedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
-      const newFile = {
-        key: fileKey,
-        name: fileData.name,
-        size: fileData.size,
-        type: fileData.type,
-        pages: fileData.pages
-      };
-      completedFiles.push(newFile);
-      localStorage.setItem('uploadedFiles', JSON.stringify(completedFiles));
-
-      // Update status to completed (local fallback)
-      setUploadedFiles(prev => 
-        prev.map(f => 
-          f.id === fileData.id 
-            ? { ...f, progress: 100, status: 'completed' as const, key: fileKey }
-            : f
-        )
-      );
-
-      onFilesUploaded([newFile]);
-      toast.success(`${fileData.name} saved locally as fallback.`);
+      toast.error(`Upload failed for ${fileData.name}. Please check your Amplify backend configuration.`);
     }
   };
 
@@ -261,23 +236,23 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
   const removeFile = async (fileId: string) => {
     const fileToRemove = uploadedFiles.find(f => f.id === fileId);
     
-    if (fileToRemove && fileToRemove.key && fileToRemove.key.startsWith('uploads/')) {
+    if (fileToRemove && fileToRemove.key && fileToRemove.key.startsWith('public/')) {
       try {
-        // Remove from S3 if it was uploaded there
+        // Remove from Amplify Storage
         await remove({ key: fileToRemove.key });
-        toast.success(`${fileToRemove.name} removed from AWS S3`);
+        toast.success(`${fileToRemove.name} removed from Amplify Storage`);
       } catch (error) {
-        console.warn('Failed to remove from S3:', error);
-        toast.warning(`${fileToRemove.name} removed locally (S3 removal failed)`);
+        console.warn('Failed to remove from Amplify Storage:', error);
+        toast.warning(`${fileToRemove.name} removed locally (Storage removal failed)`);
       }
     }
 
-    // Remove from local state and localStorage
+    // Remove from local state and sessionStorage
     setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
     
-    const storedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+    const storedFiles = JSON.parse(sessionStorage.getItem('amplifyUploadedFiles') || '[]');
     const updatedFiles = storedFiles.filter((f: any) => f.key !== fileToRemove?.key);
-    localStorage.setItem('uploadedFiles', JSON.stringify(updatedFiles));
+    sessionStorage.setItem('amplifyUploadedFiles', JSON.stringify(updatedFiles));
   };
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -370,14 +345,9 @@ const AmplifyFileUploader: React.FC<AmplifyFileUploaderProps> = ({
                       <div className="flex items-center space-x-4 text-xs text-gray-500">
                         <span>{formatFileSize(file.size)}</span>
                         <span>{file.pages} page{file.pages > 1 ? 's' : ''}</span>
-                        {file.key?.startsWith('uploads/') && (
+                        {file.key?.startsWith('public/') && (
                           <Badge variant="secondary" className="text-xs">
-                            AWS S3
-                          </Badge>
-                        )}
-                        {file.key?.startsWith('local-') && (
-                          <Badge variant="outline" className="text-xs">
-                            Local
+                            Amplify Storage
                           </Badge>
                         )}
                       </div>

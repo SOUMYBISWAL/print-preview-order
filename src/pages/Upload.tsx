@@ -20,17 +20,18 @@ const Upload = () => {
     
     // Automatically proceed to print settings when files are uploaded
     if (files.length > 0) {
-      // Store file information in localStorage for the print settings page
+      // Store file information in sessionStorage for the print settings page (Amplify Gen2 approach)
       const fileData = files.map(file => ({
         name: file.name,
         size: file.size,
         type: file.type,
         key: file.key,
-        pages: file.pages
+        pages: file.pages,
+        uploadedAt: new Date().toISOString()
       }));
       
-      localStorage.setItem('uploadedFiles', JSON.stringify(fileData));
-      localStorage.setItem('totalPages', totalPages.toString());
+      sessionStorage.setItem('amplifyUploadedFiles', JSON.stringify(fileData));
+      sessionStorage.setItem('totalPages', totalPages.toString());
 
       // Navigate to print settings automatically
       toast.success("Files uploaded successfully! Redirecting to print settings...");
